@@ -1,4 +1,26 @@
+import fs from "node:fs";
 import path from "node:path";
+import dotenv from "dotenv";
+
+const cwd = process.cwd();
+
+function loadEnvFromFile() {
+  const candidates = [
+    path.resolve(cwd, ".env"),
+    path.resolve(cwd, ".evn"),
+  ];
+
+  for (const filePath of candidates) {
+    if (fs.existsSync(filePath)) {
+      dotenv.config({ path: filePath, override: false });
+      return filePath;
+    }
+  }
+
+  return "";
+}
+
+loadEnvFromFile();
 
 function toBool(value, defaultValue) {
   if (value == null || value === "") {
@@ -38,8 +60,6 @@ function normalizeProxyUrl(value) {
 
   return `http://${trimmed}`;
 }
-
-const cwd = process.cwd();
 
 export const config = {
   proxyPort: toInt(process.env.PROXY_PORT, 8080),
