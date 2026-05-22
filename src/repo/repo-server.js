@@ -84,7 +84,7 @@ export function startRepoServer(config, downloader = null) {
     try {
       const urlObj = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
       const relativePath = path.posix.normalize(urlObj.pathname || "/").replace(/^\/+/, "");
-      const filePath = safeJoin(config.cacheDir, relativePath);
+      const filePath = safeJoin(config.mavenCacheDir, relativePath);
       let stats = await statIfExists(filePath);
 
       if (!stats || !stats.isFile()) {

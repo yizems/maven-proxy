@@ -10,6 +10,9 @@ import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
 
 async function main() {
   await fs.promises.mkdir(config.cacheDir, { recursive: true });
+  await fs.promises.mkdir(config.mavenCacheDir, { recursive: true });
+  await fs.promises.mkdir(config.npmCacheDir, { recursive: true });
+  await fs.promises.mkdir(config.genericCacheDir, { recursive: true });
   await fs.promises.mkdir(config.certDir, { recursive: true });
   await fs.promises.mkdir(config.leafCertDir, { recursive: true });
 
@@ -41,6 +44,9 @@ async function main() {
   console.log(`[maven-proxy] proxy port: ${config.proxyPort}`);
   console.log(`[maven-proxy] repo  port: ${config.repoPort}`);
   console.log(`[maven-proxy] cache dir : ${config.cacheDir}`);
+  console.log(`[maven-proxy] cache maven: ${config.mavenCacheDir}`);
+  console.log(`[maven-proxy] cache npm  : ${config.npmCacheDir}`);
+  console.log(`[maven-proxy] cache other: ${config.genericCacheDir}`);
   console.log(`[maven-proxy] root cert : ${config.rootCertPath}`);
   console.log(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {

@@ -12,6 +12,7 @@ export function startProxyServer(config, certManager, downloader, matchesDomain,
     config,
     downloader,
     upstreamProxyManager,
+    matchesDomain,
   });
   const mitmHttpServer = createMitmHttpServer(handleHttpRequestPath);
 

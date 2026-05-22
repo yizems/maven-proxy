@@ -204,6 +204,8 @@ npm start
 - `.temp` 临时文件下载 + 完整性校验 + 原子改名。
 - 指定域名多线程下载（支持阈值、线程数配置）。
 - 支持上级代理（出站请求与 CONNECT 透传可经上级代理转发）。
+- 支持 npm 代理请求（registry 元数据与 tarball）。
+- 缓存按生态分目录：`cache/maven`、`cache/npm`、`cache/generic`。
 - 本地缓存目录作为 Maven 仓库发布。
 - Java trust store 命令与脚本支持：
   - `npm run truststore:print`
@@ -219,6 +221,9 @@ npm start
 - `UPSTREAM_NO_PROXY`: 不走上级代理的域名列表（逗号分隔）。
 - `UPSTREAM_IGNORE_DOMAINS`: 上级代理忽略域名列表（逗号分隔，支持通配符，如 `*.acb.com`）。
 - `REPO_FALLBACK_REPOS`: 仓库端口回源地址列表（逗号分隔），默认：Maven Central、JitPack、Gradle Plugin Portal、Google Maven。
+- `NPM_REGISTRY_DOMAINS`: npm 域名识别列表（用于缓存分流），默认：`registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com`。
+- `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
+- `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名。
 
 说明：
 
@@ -249,4 +254,11 @@ curl.exe -sS -D - -o NUL http://127.0.0.1:8081/maven2/junit/junit/4.13.2/junit-4
 
 ```powershell
 Get-ChildItem -Recurse -File .\data\cache -Filter '*.temp'
+```
+
+4. 通过代理访问 npm registry（验证 npm 支持）：
+
+```powershell
+curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/lodash
+curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz
 ```

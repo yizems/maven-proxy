@@ -69,12 +69,54 @@ function normalizeProxyUrl(value) {
   return `http://${trimmed}`;
 }
 
+function extractHostsFromUrls(urls) {
+  const hosts = [];
+
+  for (const rawUrl of urls) {
+    try {
+      hosts.push(new URL(rawUrl).hostname.toLowerCase());
+    } catch {
+      // ignore invalid URL
+    }
+  }
+
+  return [...new Set(hosts)];
+}
+
+const defaultRepoFallbackRepos = [
+  "https://repo1.maven.org/maven2",
+  "https://jitpack.io",
+  "https://plugins.gradle.org/m2",
+  "https://maven.google.com",
+];
+
+const repoFallbackRepos = normalizeRepoList(
+  process.env.REPO_FALLBACK_REPOS,
+  defaultRepoFallbackRepos,
+);
+
+const defaultMavenRepoDomains = [
+  "repo1.maven.org",
+  "repo.maven.apache.org",
+  "jitpack.io",
+  "plugins.gradle.org",
+  "maven.google.com",
+  ...extractHostsFromUrls(repoFallbackRepos),
+];
+
+const cacheDir = path.resolve(cwd, process.env.CACHE_DIR || "data/cache");
+
 export const config = {
   proxyPort: toInt(process.env.PROXY_PORT, 8080),
   repoPort: toInt(process.env.REPO_PORT, 8081),
-  cacheDir: path.resolve(cwd, process.env.CACHE_DIR || "data/cache"),
+  cacheDir,
+  mavenCacheDir: path.resolve(cacheDir, "maven"),
+  npmCacheDir: path.resolve(cacheDir, "npm"),
+  genericCacheDir: path.resolve(cacheDir, "generic"),
   enableHttpsProxy: toBool(process.env.ENABLE_HTTPS_PROXY, true),
-  httpsMitmDomains: toList(process.env.HTTPS_MITM_DOMAINS, ["repo1.maven.org", "repo.maven.apache.org"]),
+  httpsMitmDomains: toList(process.env.HTTPS_MITM_DOMAINS, ["repo1.maven.org", "repo.maven.apache.org", "registry.npmjs.org"]),
+  npmRegistryDomains: toList(process.env.NPM_REGISTRY_DOMAINS, ["registry.npmjs.org", "registry.npmmirror.com", "npm.pkg.github.com"]),
+  mavenRepoDomains: toList(process.env.MAVEN_REPO_DOMAINS, [...new Set(defaultMavenRepoDomains)]),
   multiThreadDomains: toList(process.env.MULTI_THREAD_DOMAINS, ["repo1.maven.org"]),
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes: Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_BYTES, 1024 * 1024)),
@@ -93,13 +135,5 @@ export const config = {
   upstreamHttpsProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_HTTPS_PROXY_URL || process.env.HTTPS_PROXY || process.env.https_proxy || ""),
   upstreamNoProxyDomains: toList(process.env.UPSTREAM_NO_PROXY || process.env.NO_PROXY || process.env.no_proxy || ""),
   upstreamIgnoreDomains: toList(process.env.UPSTREAM_IGNORE_DOMAINS || ""),
-  repoFallbackRepos: normalizeRepoList(
-    process.env.REPO_FALLBACK_REPOS,
-    [
-      "https://repo1.maven.org/maven2",
-      "https://jitpack.io",
-      "https://plugins.gradle.org/m2",
-      "https://maven.google.com",
-    ],
-  ),
+  repoFallbackRepos,
 };

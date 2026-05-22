@@ -3,6 +3,7 @@ import http from "node:http";
 import https from "node:https";
 import path from "node:path";
 import { getCacheFilePath } from "../cache/cache-path.js";
+import { detectPackageEcosystem } from "../common/ecosystem.js";
 
 function pickClient(protocol) {
   return protocol === "https:" ? https : http;
@@ -125,7 +126,7 @@ function forwardDirectRequest(req, res, urlObj, timeoutMs, upstreamProxyManager 
   req.pipe(upstreamReq);
 }
 
-export function createHttpRequestHandler({ config, downloader, upstreamProxyManager = null }) {
+export function createHttpRequestHandler({ config, downloader, upstreamProxyManager = null, matchesDomain }) {
   return async function handleHttpRequestPath(req, res, forcedProtocol = null) {
     let urlObj;
     try {
@@ -143,7 +144,11 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
 
     let cachePath;
     try {
-      cachePath = getCacheFilePath(config.cacheDir, urlObj);
+      const ecosystem = detectPackageEcosystem(urlObj, config, matchesDomain);
+      cachePath = getCacheFilePath(config.cacheDir, urlObj, {
+        ecosystem,
+        includeHost: ecosystem !== "maven",
+      });
     } catch (error) {
       sendText(res, 400, `Invalid cache path: ${error.message}`);
       return;
