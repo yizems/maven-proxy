@@ -24,12 +24,72 @@ async function statIfExists(filePath) {
   }
 }
 
-export function startRepoServer(config) {
+function buildRemoteUrl(repoBase, relativePath) {
+  const base = repoBase.endsWith("/") ? repoBase : `${repoBase}/`;
+  const relative = relativePath.replace(/^\/+/, "");
+  return new URL(relative, base);
+}
+
+function buildCandidateRelativePaths(relativePath) {
+  const normalized = relativePath.replace(/^\/+/, "");
+  const candidates = [normalized];
+
+  if (normalized.toLowerCase().startsWith("maven2/")) {
+    candidates.push(normalized.slice("maven2/".length));
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+async function ensureFromRemoteRepos(config, downloader, filePath, relativePath) {
+  if (!downloader) {
+    return null;
+  }
+
+  const repos = config.repoFallbackRepos || [];
+  if (repos.length === 0) {
+    return null;
+  }
+
+  let hasNon404Error = false;
+  let lastError = null;
+  const candidatePaths = buildCandidateRelativePaths(relativePath);
+
+  for (const repoBase of repos) {
+    for (const candidatePath of candidatePaths) {
+      const remoteUrl = buildRemoteUrl(repoBase, candidatePath);
+
+      try {
+        console.log(`[repo] cache miss, try remote ${remoteUrl.href}`);
+        await downloader.ensureCached(remoteUrl, filePath, {});
+        return await statIfExists(filePath);
+      } catch (error) {
+        lastError = error;
+        if (error.statusCode !== 404) {
+          hasNon404Error = true;
+        }
+      }
+    }
+  }
+
+  if (hasNon404Error && lastError) {
+    throw lastError;
+  }
+
+  return null;
+}
+
+export function startRepoServer(config, downloader = null) {
   const server = http.createServer(async (req, res) => {
     try {
       const urlObj = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
-      const filePath = safeJoin(config.cacheDir, urlObj.pathname);
-      const stats = await statIfExists(filePath);
+      const relativePath = path.posix.normalize(urlObj.pathname || "/").replace(/^\/+/, "");
+      const filePath = safeJoin(config.cacheDir, relativePath);
+      let stats = await statIfExists(filePath);
+
+      if (!stats || !stats.isFile()) {
+        stats = await ensureFromRemoteRepos(config, downloader, filePath, relativePath);
+      }
 
       if (!stats || !stats.isFile()) {
         res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
@@ -49,7 +109,8 @@ export function startRepoServer(config) {
       res.writeHead(200);
       fs.createReadStream(filePath).pipe(res);
     } catch (error) {
-      res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+      const statusCode = error.statusCode && error.statusCode >= 400 ? 502 : 500;
+      res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
       res.end(`Repo server error: ${error.message}`);
     }
   });

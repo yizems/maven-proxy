@@ -51,6 +51,7 @@
 - 该仓库地址可被：
   - Maven 的 `repositories` 配置直接引用。
   - Gradle 的 `repositories` 配置直接引用。
+- 当请求文件本地不存在时，仓库服务需按配置仓库列表回源下载，下载成功后缓存到本地并返回。
 
 ### 2.6 Java Trust Store 支持
 - 需提供面向 Java 环境的 trust store 使用说明与命令模板，用于信任本项目生成的 Root CA。
@@ -138,6 +139,7 @@ keytool -list -v `
 - Maven/Gradle 可将仓库发布端口作为仓库地址并成功解析已缓存依赖。
 - 可通过命令生成/维护 Java trust store，并成功导入 Root CA。
 - 端口、缓存目录、多线程下载、HTTPS 证书与 trust store 配置均可通过配置项调整。
+- 仓库服务在缓存缺失时可回源 Maven Central、JitPack、Gradle Plugin Portal、Google Maven（默认列表，可配置）。
 
 ## 7. 建议的后续扩展（可选）
 - 缓存校验与损坏文件自动修复。
@@ -216,6 +218,7 @@ npm start
 - `UPSTREAM_HTTPS_PROXY_URL`: 仅 HTTPS 出站使用的上级代理。
 - `UPSTREAM_NO_PROXY`: 不走上级代理的域名列表（逗号分隔）。
 - `UPSTREAM_IGNORE_DOMAINS`: 上级代理忽略域名列表（逗号分隔，支持通配符，如 `*.acb.com`）。
+- `REPO_FALLBACK_REPOS`: 仓库端口回源地址列表（逗号分隔），默认：Maven Central、JitPack、Gradle Plugin Portal、Google Maven。
 
 说明：
 

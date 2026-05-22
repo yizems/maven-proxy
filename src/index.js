@@ -33,7 +33,7 @@ async function main() {
     matchesDomain,
     upstreamProxyManager,
   );
-  const repoServer = startRepoServer(config);
+  const repoServer = startRepoServer(config, downloader);
 
   const trustCommands = getTrustStoreCommands(config);
 
@@ -42,6 +42,7 @@ async function main() {
   console.log(`[maven-proxy] repo  port: ${config.repoPort}`);
   console.log(`[maven-proxy] cache dir : ${config.cacheDir}`);
   console.log(`[maven-proxy] root cert : ${config.rootCertPath}`);
+  console.log(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {
     console.log(`[maven-proxy] upstream proxy (generic): ${config.upstreamProxyUrl || "(none)"}`);
     console.log(`[maven-proxy] upstream proxy (http)   : ${config.upstreamHttpProxyUrl || "(none)"}`);

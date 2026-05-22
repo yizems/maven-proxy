@@ -44,6 +44,14 @@ function toList(value, defaultValue = []) {
     .filter(Boolean);
 }
 
+function normalizeRepoList(value, defaultValue = []) {
+  const raw = toList(value, defaultValue);
+  return raw
+    .map((item) => String(item).trim())
+    .filter((item) => /^https?:\/\//i.test(item))
+    .map((item) => item.replace(/\/+$/, ""));
+}
+
 function normalizeProxyUrl(value) {
   if (!value) {
     return "";
@@ -85,4 +93,13 @@ export const config = {
   upstreamHttpsProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_HTTPS_PROXY_URL || process.env.HTTPS_PROXY || process.env.https_proxy || ""),
   upstreamNoProxyDomains: toList(process.env.UPSTREAM_NO_PROXY || process.env.NO_PROXY || process.env.no_proxy || ""),
   upstreamIgnoreDomains: toList(process.env.UPSTREAM_IGNORE_DOMAINS || ""),
+  repoFallbackRepos: normalizeRepoList(
+    process.env.REPO_FALLBACK_REPOS,
+    [
+      "https://repo1.maven.org/maven2",
+      "https://jitpack.io",
+      "https://plugins.gradle.org/m2",
+      "https://maven.google.com",
+    ],
+  ),
 };
