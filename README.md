@@ -149,6 +149,32 @@ keytool -list -v `
 
 当前仓库已提供可运行实现，主工程源码位于 `src/`，采用 Node.js ESM（`import`）格式；辅助脚本位于 `scripts/`。
 
+当前源码目录建议按职责组织：
+
+```text
+src/
+  index.js
+  config/
+    config.js
+  common/
+    domain-match.js
+  cache/
+    cache-path.js
+    downloader.js
+  cert/
+    cert-manager.js
+    truststore-utils.js
+  proxy/
+    proxy-server.js
+    proxy-http-handler.js
+    proxy-connect-handler.js
+    upstream-proxy.js
+  repo/
+    repo-server.js
+scripts/
+  truststore.js
+```
+
 ### 8.1 启动
 1. 安装依赖：
 

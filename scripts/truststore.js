@@ -1,5 +1,5 @@
-import { config } from "../src/config.js";
-import { getTrustStoreCommands, initTrustStore } from "../src/truststore-utils.js";
+import { config } from "../src/config/config.js";
+import { getTrustStoreCommands, initTrustStore } from "../src/cert/truststore-utils.js";
 
 const action = process.argv[2] || "print";
 

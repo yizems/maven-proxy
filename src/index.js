@@ -1,12 +1,12 @@
 import fs from "node:fs";
-import { config } from "./config.js";
-import { matchesDomain } from "./domain-match.js";
-import { CertManager } from "./cert-manager.js";
-import { Downloader } from "./downloader.js";
-import { startProxyServer } from "./proxy-server.js";
-import { startRepoServer } from "./repo-server.js";
-import { getTrustStoreCommands } from "./truststore-utils.js";
-import { UpstreamProxyManager } from "./upstream-proxy.js";
+import { config } from "./config/config.js";
+import { matchesDomain } from "./common/domain-match.js";
+import { CertManager } from "./cert/cert-manager.js";
+import { Downloader } from "./cache/downloader.js";
+import { startProxyServer } from "./proxy/proxy-server.js";
+import { startRepoServer } from "./repo/repo-server.js";
+import { getTrustStoreCommands } from "./cert/truststore-utils.js";
+import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
 
 async function main() {
   await fs.promises.mkdir(config.cacheDir, { recursive: true });
