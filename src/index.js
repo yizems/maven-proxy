@@ -5,7 +5,7 @@ import { CertManager } from "./cert-manager.js";
 import { Downloader } from "./downloader.js";
 import { startProxyServer } from "./proxy-server.js";
 import { startRepoServer } from "./repo-server.js";
-import { getTrustStoreCommands } from "./truststore.js";
+import { getTrustStoreCommands } from "./truststore-utils.js";
 import { UpstreamProxyManager } from "./upstream-proxy.js";
 
 async function main() {

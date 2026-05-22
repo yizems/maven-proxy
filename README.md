@@ -147,7 +147,7 @@ keytool -list -v `
 
 ## 8. 当前实现与运行说明
 
-当前仓库已提供可运行实现，源码位于 `src/`，采用 Node.js ESM（`import`）格式。
+当前仓库已提供可运行实现，主工程源码位于 `src/`，采用 Node.js ESM（`import`）格式；辅助脚本位于 `scripts/`。
 
 ### 8.1 启动
 1. 安装依赖：

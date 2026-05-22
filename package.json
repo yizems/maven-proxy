@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "truststore:print": "node src/truststore.js print",
-    "truststore:init": "node src/truststore.js init",
+    "truststore:print": "node scripts/truststore.js print",
+    "truststore:init": "node scripts/truststore.js init",
     "test": "node -e \"console.log('No tests yet')\""
   },
   "keywords": [],

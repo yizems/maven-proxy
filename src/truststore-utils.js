@@ -2,8 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
-import { config } from "./config.js";
 
 function runCommand(command, args) {
   const result = spawnSync(command, args, {
@@ -41,8 +39,8 @@ export function getTrustStoreCommands(runtimeConfig) {
   return { copyCmd, importCmd, listCmd };
 }
 
-export function initTrustStore(runtimeConfig = config) {
-  if (!runtimeConfig.javaHome) {
+export function initTrustStore(runtimeConfig) {
+  if (!runtimeConfig || !runtimeConfig.javaHome) {
     throw new Error("JAVA_HOME is required to initialize trust store.");
   }
 
@@ -86,21 +84,4 @@ export function initTrustStore(runtimeConfig = config) {
     "-alias",
     runtimeConfig.trustStoreAlias,
   ]);
-}
-
-const currentFileUrl = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : "";
-
-if (import.meta.url === currentFileUrl) {
-  const action = process.argv[2] || "print";
-
-  if (action === "init") {
-    initTrustStore(config);
-    process.exit(0);
-  }
-
-  const commands = getTrustStoreCommands(config);
-  console.log("Trust store commands:");
-  console.log(commands.copyCmd);
-  console.log(commands.importCmd);
-  console.log(commands.listCmd);
 }
