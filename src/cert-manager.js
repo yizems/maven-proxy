@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import forge from "node-forge";
 
+const CERT_VALID_YEARS = 30;
+
 function randomSerial() {
   return forge.util.bytesToHex(forge.random.getBytesSync(9));
 }
@@ -33,8 +35,10 @@ function createRootCertificate() {
   cert.serialNumber = randomSerial();
 
   const now = new Date();
+  const rootNotAfter = new Date(now);
+  rootNotAfter.setFullYear(rootNotAfter.getFullYear() + CERT_VALID_YEARS);
   cert.validity.notBefore = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  cert.validity.notAfter = new Date(now.getTime() + 3650 * 24 * 60 * 60 * 1000);
+  cert.validity.notAfter = rootNotAfter;
 
   const attrs = [
     { name: "commonName", value: "Maven Proxy Root CA" },
@@ -74,8 +78,10 @@ function createLeafCertificate(hostname, rootPrivateKey, rootCertificate) {
   cert.serialNumber = randomSerial();
 
   const now = new Date();
+  const leafNotAfter = new Date(now);
+  leafNotAfter.setFullYear(leafNotAfter.getFullYear() + CERT_VALID_YEARS);
   cert.validity.notBefore = new Date(now.getTime() - 60 * 60 * 1000);
-  cert.validity.notAfter = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+  cert.validity.notAfter = leafNotAfter;
 
   cert.setSubject([
     { name: "commonName", value: hostname },
