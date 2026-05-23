@@ -208,7 +208,8 @@ npm start
 - 缓存按生态分目录：`cache/maven`、`cache/npm`、`cache/generic`。
 - 日志单独落盘：
   - 记录每个下载包完整 URL（`download-YYYY-MM-DD.log`）。
-  - 同步写入运行期 `console.log`（`console-YYYY-MM-DD.log`）。
+  - 同步写入运行期 `console.log` / `console.warn` / `console.error`（`console-YYYY-MM-DD.log`）。
+  - 记录全局异常：未捕获异常（uncaught exception）与未处理 Promise 拒绝（unhandled rejection）。
   - 日志文件按天切分，默认仅保留最近 7 天。
 - 本地缓存目录作为 Maven 仓库发布。
 - Java trust store 命令与脚本支持：

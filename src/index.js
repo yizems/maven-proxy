@@ -7,12 +7,13 @@ import { startProxyServer } from "./proxy/proxy-server.js";
 import { startRepoServer } from "./repo/repo-server.js";
 import { getTrustStoreCommands } from "./cert/truststore-utils.js";
 import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
-import { installConsoleLogFileMirror } from "./common/console-log-file.js";
+import { installConsoleLogFileMirror, installGlobalErrorLogging } from "./common/console-log-file.js";
 
 installConsoleLogFileMirror({
   logDir: config.downloadLogDir,
   retentionDays: config.logRetentionDays,
 });
+installGlobalErrorLogging();
 
 async function main() {
   await fs.promises.mkdir(config.cacheDir, { recursive: true });
