@@ -104,7 +104,6 @@ function createLeafCertificate(hostname, rootPrivateKey, rootCertificate) {
       altNames: [{ type: 2, value: hostname }],
     },
     { name: "subjectKeyIdentifier" },
-    { name: "authorityKeyIdentifier", keyIdentifier: true },
   ]);
 
   cert.sign(rootPrivateKey, forge.md.sha256.create());
