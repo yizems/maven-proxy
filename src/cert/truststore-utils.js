@@ -155,17 +155,17 @@ function validateMergeOptions(options) {
 
 export function getTrustStoreCommands(runtimeConfig) {
   const isWindows = os.platform() === "win32";
-  const javaHome = runtimeConfig.javaHome || "%JAVA_HOME%";
+  const javaHome = runtimeConfig.javaHome || (isWindows ? "%JAVA_HOME%" : "$JAVA_HOME");
   const defaultCacerts = isWindows
     ? `${javaHome}\\lib\\security\\cacerts`
     : `${javaHome}/lib/security/cacerts`;
 
   const copyCmd = isWindows
-    ? `Copy-Item \"${defaultCacerts}\" \"${runtimeConfig.trustStorePath}\"`
-    : `cp \"${defaultCacerts}\" \"${runtimeConfig.trustStorePath}\"`;
+    ? `Copy-Item "${defaultCacerts}" "${runtimeConfig.trustStorePath}"`
+    : `cp "${defaultCacerts}" "${runtimeConfig.trustStorePath}"`;
 
-  const importCmd = `keytool -importcert -noprompt -trustcacerts -alias ${runtimeConfig.trustStoreAlias} -file ${runtimeConfig.rootCertPath} -keystore ${runtimeConfig.trustStorePath} -storepass ${runtimeConfig.trustStorePassword}`;
-  const listCmd = `keytool -list -v -keystore ${runtimeConfig.trustStorePath} -storepass ${runtimeConfig.trustStorePassword} -alias ${runtimeConfig.trustStoreAlias}`;
+  const importCmd = `keytool -importcert -noprompt -trustcacerts -alias "${runtimeConfig.trustStoreAlias}" -file "${runtimeConfig.rootCertPath}" -keystore "${runtimeConfig.trustStorePath}" -storepass "${runtimeConfig.trustStorePassword}"`;
+  const listCmd = `keytool -list -v -keystore "${runtimeConfig.trustStorePath}" -storepass "${runtimeConfig.trustStorePassword}" -alias "${runtimeConfig.trustStoreAlias}"`;
 
   return { copyCmd, importCmd, listCmd };
 }

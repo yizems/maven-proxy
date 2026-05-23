@@ -15,6 +15,12 @@
   "scripts": {
     "start": "node src/index.js",
     "start:cli": "node bin/maven-proxy.js",
+    "cli:help": "node bin/maven-proxy.js --help",
+    "cli:start": "node bin/maven-proxy.js start --mode development",
+    "cli:doctor": "node bin/maven-proxy.js doctor --mode development",
+    "cli:truststore:print": "node bin/maven-proxy.js truststore print --mode development",
+    "cli:truststore:init": "node bin/maven-proxy.js truststore init --mode development",
+    "cli:truststore:merge": "node bin/maven-proxy.js truststore merge --mode development",
     "truststore:print": "node scripts/truststore.js print",
     "truststore:init": "node scripts/truststore.js init",
     "truststore:merge": "node scripts/truststore.js merge",

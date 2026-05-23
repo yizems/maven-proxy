@@ -407,6 +407,15 @@ maven-proxy
 - 若 target 已存在，必须是文件。
 - 执行 merge/init 前先校验 `keytool` 可用。
 
+9. 开发阶段快捷命令（npm scripts）：
+
+- `npm run cli:help`: 查看 CLI 帮助。
+- `npm run cli:start`: 以开发模式启动 CLI（等价 `maven-proxy start --mode development`）。
+- `npm run cli:doctor`: 以开发模式运行 doctor。
+- `npm run cli:truststore:print`: 以开发模式输出 truststore 命令模板。
+- `npm run cli:truststore:init`: 以开发模式初始化 truststore。
+- `npm run cli:truststore:merge -- --source <path> --target <path> ...`: 以开发模式执行 merge。
+
 ## 9. 客户端使用方法
 
 以下示例默认代理端口是 `8080`，与当前项目默认 `PROXY_PORT` 一致；如果你改过端口，请替换示例中的端口。
