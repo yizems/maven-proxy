@@ -186,7 +186,12 @@ npm install
 
 2. 按需复制并修改环境变量（参考 `.env.example`）。
 
-说明：服务启动时会自动从项目根目录加载 `.env`；若不存在则尝试加载 `.evn`（兼容别名）。
+说明：
+
+- 开发模式（默认）：当你在本项目目录运行 `npm start` 时，优先读取项目根目录 `.env`；若不存在则尝试 `.evn`（兼容别名）。
+- 用户模式（CLI 默认）：通过 `npx maven-proxy` 或全局命令运行时，默认读取 `~/maven-proxy/config`。
+- 可通过 `MAVEN_PROXY_CONFIG_MODE` 强制模式（`development` 或 `user`）。
+- 可通过 `MAVEN_PROXY_CONFIG_FILE` 指定配置文件路径。
 
 3. 启动服务：
 
@@ -232,6 +237,8 @@ npm start
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；下载日志与 console 日志都在该目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
+- `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
+- `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
 
 说明：
 
@@ -329,6 +336,66 @@ npm run truststore:merge -- \
   --source-pass changeit \
   --target-pass changeit
 ```
+
+### 8.6 发布为命令行工具（npx / 全局安装）
+
+本项目已提供可执行命令 `maven-proxy`。
+
+1. 使用 npx 直接运行：
+
+```bash
+npx maven-proxy
+```
+
+说明：首次运行时如果未传 `--config` 且 `~/maven-proxy/config` 不存在，CLI 会自动创建默认配置文件。
+
+2. 全局安装后运行：
+
+```bash
+npm install -g maven-proxy
+maven-proxy
+```
+
+3. CLI 默认配置路径：
+
+- `~/maven-proxy/config`
+
+4. 常用 CLI 参数：
+
+- `maven-proxy --config /path/to/config`
+- `maven-proxy start --mode development`
+- `maven-proxy start --mode user`
+- `maven-proxy init-config --force`
+- `maven-proxy truststore print`
+- `maven-proxy truststore init`
+- `maven-proxy truststore merge --source /path/source.jks --target /path/target.jks`
+- `maven-proxy doctor`
+
+5. 规则说明：
+
+- 开发阶段（在项目目录执行 `npm start`）默认使用项目 `.env/.evn`。
+- CLI 阶段默认使用用户目录配置文件。
+- 当配置项为相对路径时，会基于当前配置文件所在目录解析。
+
+6. Trust Store CLI 说明：
+
+- `maven-proxy truststore print`: 输出 trust store 相关命令模板。
+- `maven-proxy truststore init`: 初始化项目 trust store（行为同 `npm run truststore:init`）。
+- `maven-proxy truststore merge ...`: 合并 trust store（行为同 `npm run truststore:merge -- ...`）。
+
+7. Doctor 诊断命令：
+
+- `maven-proxy doctor`: 一次性检查配置加载、端口可用性、`keytool` 可用性、`JAVA_HOME`、证书与 trust store 路径、日志/缓存目录可写性。
+- 检查结果包含 `PASS/WARN/FAIL`。
+- 若存在 `FAIL`，命令将返回非 0 退出码（`2`）。
+
+8. Trust Store merge 增强校验（当前已内置）：
+
+- 校验 `--source-type/--target-type` 仅允许 `JKS` 或 `PKCS12`。
+- 校验 source/target 不能是同一路径。
+- 校验 source 必须存在且是文件。
+- 若 target 已存在，必须是文件。
+- 执行 merge/init 前先校验 `keytool` 可用。
 
 ## 9. 客户端使用方法
 

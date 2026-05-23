@@ -49,6 +49,12 @@ async function main() {
   const trustCommands = getTrustStoreCommands(config);
 
   console.log("[maven-proxy] started");
+  console.log(`[maven-proxy] config mode: ${config.configMode}`);
+  console.log(`[maven-proxy] config file: ${config.loadedConfigFile || "(none)"}`);
+  console.log(`[maven-proxy] config base: ${config.configBaseDir}`);
+  if (config.configMode === "user") {
+    console.log(`[maven-proxy] default user config: ${config.defaultUserConfigPath}`);
+  }
   console.log(`[maven-proxy] proxy port: ${config.proxyPort}`);
   console.log(`[maven-proxy] repo  port: ${config.repoPort}`);
   console.log(`[maven-proxy] cache dir : ${config.cacheDir}`);

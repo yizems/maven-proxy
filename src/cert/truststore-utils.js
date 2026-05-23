@@ -3,6 +3,8 @@ import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
 
+const SUPPORTED_STORE_TYPES = new Set(["JKS", "PKCS12"]);
+
 function runCommand(command, args) {
   const result = spawnSync(command, args, {
     stdio: "inherit",
@@ -36,6 +38,22 @@ function runCommandCapture(command, args) {
   }
 
   return result.stdout || "";
+}
+
+export function assertKeytoolAvailable() {
+  const result = spawnSync("keytool", ["-help"], {
+    shell: false,
+    encoding: "utf8",
+  });
+
+  if (result.error) {
+    throw new Error(`keytool is not available: ${result.error.message}`);
+  }
+
+  if (result.status !== 0) {
+    const stderr = (result.stderr || "").trim();
+    throw new Error(stderr || "keytool is not available.");
+  }
 }
 
 function getDefaultCacertsPath(javaHome) {
@@ -89,8 +107,38 @@ function validateMergeOptions(options) {
     }
   }
 
+  const sourceType = String(options.sourceType || "JKS").toUpperCase();
+  const targetType = String(options.targetType || "JKS").toUpperCase();
+
+  if (!SUPPORTED_STORE_TYPES.has(sourceType)) {
+    throw new Error(`Invalid sourceType: ${sourceType}. Use JKS or PKCS12.`);
+  }
+
+  if (!SUPPORTED_STORE_TYPES.has(targetType)) {
+    throw new Error(`Invalid targetType: ${targetType}. Use JKS or PKCS12.`);
+  }
+
+  const resolvedSourcePath = path.resolve(options.sourcePath);
+  const resolvedTargetPath = path.resolve(options.targetPath);
+
+  if (resolvedSourcePath === resolvedTargetPath) {
+    throw new Error("sourcePath and targetPath must be different.");
+  }
+
   if (!fs.existsSync(options.sourcePath)) {
     throw new Error(`Source truststore not found: ${options.sourcePath}`);
+  }
+
+  const sourceStats = fs.statSync(options.sourcePath);
+  if (!sourceStats.isFile()) {
+    throw new Error(`Source truststore is not a file: ${options.sourcePath}`);
+  }
+
+  if (fs.existsSync(options.targetPath)) {
+    const targetStats = fs.statSync(options.targetPath);
+    if (!targetStats.isFile()) {
+      throw new Error(`Target truststore path is not a file: ${options.targetPath}`);
+    }
   }
 
   const mode = options.onConflict || "fail";
@@ -98,7 +146,11 @@ function validateMergeOptions(options) {
     throw new Error(`Invalid onConflict mode: ${mode}. Use \"fail\" or \"overwrite\".`);
   }
 
-  return mode;
+  return {
+    onConflict: mode,
+    sourceType,
+    targetType,
+  };
 }
 
 export function getTrustStoreCommands(runtimeConfig) {
@@ -119,6 +171,8 @@ export function getTrustStoreCommands(runtimeConfig) {
 }
 
 export function initTrustStore(runtimeConfig) {
+  assertKeytoolAvailable();
+
   if (!runtimeConfig || !runtimeConfig.javaHome) {
     throw new Error("JAVA_HOME is required to initialize trust store.");
   }
@@ -166,9 +220,12 @@ export function initTrustStore(runtimeConfig) {
 }
 
 export function mergeTrustStores(options) {
-  const onConflict = validateMergeOptions(options);
-  const sourceType = options.sourceType || "JKS";
-  const targetType = options.targetType || "JKS";
+  assertKeytoolAvailable();
+
+  const validated = validateMergeOptions(options);
+  const onConflict = validated.onConflict;
+  const sourceType = validated.sourceType;
+  const targetType = validated.targetType;
   const dryRun = Boolean(options.dryRun);
 
   if (!dryRun) {

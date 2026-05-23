@@ -1,26 +1,90 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import dotenv from "dotenv";
 
 const cwd = process.cwd();
+const userConfigDir = path.resolve(os.homedir(), "maven-proxy");
+const defaultUserConfigPath = path.join(userConfigDir, "config");
 
-function loadEnvFromFile() {
-  const candidates = [
-    path.resolve(cwd, ".env"),
-    path.resolve(cwd, ".evn"),
-  ];
+function normalizeConfigMode(value) {
+  const normalized = String(value || "").trim().toLowerCase();
 
-  for (const filePath of candidates) {
-    if (fs.existsSync(filePath)) {
-      dotenv.config({ path: filePath, override: false });
-      return filePath;
-    }
+  if (["dev", "development", "project"].includes(normalized)) {
+    return "development";
+  }
+
+  if (["user", "home", "global", "production", "prod"].includes(normalized)) {
+    return "user";
   }
 
   return "";
 }
 
-loadEnvFromFile();
+function isProjectWorkspace(dirPath) {
+  const packageJsonPath = path.resolve(dirPath, "package.json");
+  const entryPath = path.resolve(dirPath, "src/index.js");
+
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(entryPath)) {
+    return false;
+  }
+
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    return packageJson?.name === "maven-proxy";
+  } catch {
+    return false;
+  }
+}
+
+function resolveConfigMode() {
+  const forced = normalizeConfigMode(process.env.MAVEN_PROXY_CONFIG_MODE);
+  if (forced) {
+    return forced;
+  }
+
+  return isProjectWorkspace(cwd) ? "development" : "user";
+}
+
+function resolveConfigFilePath(configMode) {
+  const envPath = String(process.env.MAVEN_PROXY_CONFIG_FILE || "").trim();
+  if (envPath) {
+    return path.isAbsolute(envPath) ? envPath : path.resolve(cwd, envPath);
+  }
+
+  if (configMode === "development") {
+    const devCandidates = [
+      path.resolve(cwd, ".env"),
+      path.resolve(cwd, ".evn"),
+    ];
+
+    for (const candidate of devCandidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+
+    return "";
+  }
+
+  return fs.existsSync(defaultUserConfigPath) ? defaultUserConfigPath : "";
+}
+
+function loadEnvFromFile(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    dotenv.config({ path: filePath, override: false });
+    return filePath;
+  }
+
+  return "";
+}
+
+const configMode = resolveConfigMode();
+const resolvedConfigFilePath = resolveConfigFilePath(configMode);
+const loadedConfigFile = loadEnvFromFile(resolvedConfigFilePath);
+const configBaseDir = configMode === "development"
+  ? cwd
+  : (resolvedConfigFilePath ? path.dirname(resolvedConfigFilePath) : userConfigDir);
 
 function toBool(value, defaultValue) {
   if (value == null || value === "") {
@@ -104,9 +168,13 @@ const defaultMavenRepoDomains = [
   ...extractHostsFromUrls(repoFallbackRepos),
 ];
 
-const cacheDir = path.resolve(cwd, process.env.CACHE_DIR || "data/cache");
+const cacheDir = path.resolve(configBaseDir, process.env.CACHE_DIR || "data/cache");
 
 export const config = {
+  configMode,
+  configBaseDir,
+  loadedConfigFile,
+  defaultUserConfigPath,
   proxyPort: toInt(process.env.PROXY_PORT, 8080),
   repoPort: toInt(process.env.REPO_PORT, 8081),
   cacheDir,
@@ -121,13 +189,13 @@ export const config = {
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes: Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_BYTES, 1024 * 1024)),
   downloadTimeoutMs: Math.max(1000, toInt(process.env.DOWNLOAD_TIMEOUT_MS, 60000)),
-  downloadLogDir: path.resolve(cwd, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
+  downloadLogDir: path.resolve(configBaseDir, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
   logRetentionDays: Math.max(1, toInt(process.env.LOG_RETENTION_DAYS, 7)),
-  certDir: path.resolve(cwd, process.env.CERT_DIR || "data/certs"),
-  rootCertPath: path.resolve(cwd, process.env.ROOT_CERT_PATH || "data/certs/root-ca.crt"),
-  rootKeyPath: path.resolve(cwd, process.env.ROOT_KEY_PATH || "data/certs/root-ca.key.pem"),
-  leafCertDir: path.resolve(cwd, process.env.LEAF_CERT_DIR || "data/certs/leaf"),
-  trustStorePath: path.resolve(cwd, process.env.TRUST_STORE_PATH || "data/certs/proxy-truststore.jks"),
+  certDir: path.resolve(configBaseDir, process.env.CERT_DIR || "data/certs"),
+  rootCertPath: path.resolve(configBaseDir, process.env.ROOT_CERT_PATH || "data/certs/root-ca.crt"),
+  rootKeyPath: path.resolve(configBaseDir, process.env.ROOT_KEY_PATH || "data/certs/root-ca.key.pem"),
+  leafCertDir: path.resolve(configBaseDir, process.env.LEAF_CERT_DIR || "data/certs/leaf"),
+  trustStorePath: path.resolve(configBaseDir, process.env.TRUST_STORE_PATH || "data/certs/proxy-truststore.jks"),
   trustStoreAlias: process.env.TRUST_STORE_ALIAS || "maven-proxy-root-ca",
   trustStorePassword: process.env.TRUST_STORE_PASSWORD || "changeit",
   javaHome: process.env.JAVA_HOME || "",
