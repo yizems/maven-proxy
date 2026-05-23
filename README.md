@@ -323,3 +323,81 @@ npm run truststore:merge -- \
   --target-pass changeit
 ```
 
+## 9. 客户端使用方法
+
+以下示例默认代理端口是 `8080`，与当前项目默认 `PROXY_PORT` 一致；如果你改过端口，请替换示例中的端口。
+
+### 9.1 Gradle: 设置代理 + trust store
+
+1. 在本项目中准备 trust store（若已执行过 `npm run truststore:init` 可跳过）：
+
+```bash
+npm run truststore:init
+```
+
+2. 编辑 `~/.gradle/gradle.properties`（全局生效），增加以下内容：
+
+```properties
+# Maven Proxy 代理
+systemProp.http.proxyHost=127.0.0.1
+systemProp.http.proxyPort=8080
+systemProp.https.proxyHost=127.0.0.1
+systemProp.https.proxyPort=8080
+
+# 使用项目 trust store 信任本地 Root CA
+org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/data/certs/proxy-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit
+```
+
+3. 最小验证（在任意 Gradle 项目下）：
+
+```bash
+./gradlew --refresh-dependencies dependencies
+```
+
+4. 如果不想改全局 `gradle.properties`，也可以一次性通过命令行传入：
+
+```bash
+./gradlew \
+  -Dhttp.proxyHost=127.0.0.1 \
+  -Dhttp.proxyPort=8080 \
+  -Dhttps.proxyHost=127.0.0.1 \
+  -Dhttps.proxyPort=8080 \
+  -Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/data/certs/proxy-truststore.jks \
+  -Djavax.net.ssl.trustStorePassword=changeit \
+  dependencies
+```
+
+说明：`trustStore` 路径建议与你的 `TRUST_STORE_PATH` 保持一致。
+
+### 9.2 npm: 设置代理 + 忽略 SSL 校验
+
+> 仅用于本地开发排障。长期使用建议导入 Root CA 并保持 `strict-ssl=true`。
+
+1. 设置 npm 代理：
+
+```bash
+npm config set proxy http://127.0.0.1:8080
+npm config set https-proxy http://127.0.0.1:8080
+```
+
+2. 忽略 SSL 校验（开发环境临时使用）：
+
+```bash
+npm config set strict-ssl false
+```
+
+3. 验证代理是否生效：
+
+```bash
+npm ping
+npm view lodash version
+```
+
+4. 恢复为安全默认值：
+
+```bash
+npm config set strict-ssl true
+npm config delete proxy
+npm config delete https-proxy
+```
+
