@@ -32,6 +32,28 @@ function isDirectory(dirPath) {
   }
 }
 
+function isLikelyJavaHome(homePath, platform) {
+  const javaName = platform === "win32" ? "java.exe" : "java";
+
+  if (!isFile(path.join(homePath, "bin", javaName))) {
+    return false;
+  }
+
+  if (isFile(path.join(homePath, "release"))) {
+    return true;
+  }
+
+  if (isFile(path.join(homePath, "lib", "security", "cacerts"))) {
+    return true;
+  }
+
+  if (isFile(path.join(homePath, "jre", "lib", "security", "cacerts"))) {
+    return true;
+  }
+
+  return false;
+}
+
 function safeRealpath(targetPath) {
   try {
     return fs.realpathSync(targetPath);
@@ -54,7 +76,12 @@ function deriveJavaHomeFromJavaBin(javaBinPath) {
   }
 
   const javaHome = path.dirname(binDir);
-  return isDirectory(javaHome) ? javaHome : "";
+  if (!isDirectory(javaHome)) {
+    return "";
+  }
+
+  const platform = os.platform();
+  return isLikelyJavaHome(javaHome, platform) ? javaHome : "";
 }
 
 function normalizeConfiguredJavaHome(configured, platform) {
@@ -64,13 +91,15 @@ function normalizeConfiguredJavaHome(configured, platform) {
 
   const resolved = safeRealpath(configured);
   if (isDirectory(resolved)) {
-    const javaName = platform === "win32" ? "java.exe" : "java";
-    if (isFile(path.join(resolved, "bin", javaName))) {
+    if (isLikelyJavaHome(resolved, platform)) {
       return resolved;
     }
 
-    if (path.basename(resolved).toLowerCase() === "bin" && isFile(path.join(resolved, javaName))) {
-      return path.dirname(resolved);
+    if (path.basename(resolved).toLowerCase() === "bin") {
+      const base = path.dirname(resolved);
+      if (isLikelyJavaHome(base, platform)) {
+        return base;
+      }
     }
 
     return "";
@@ -100,6 +129,56 @@ function detectFromJavaCommand(platform) {
   }
 
   return deriveJavaHomeFromJavaBin(firstPath);
+}
+
+function detectFromLinuxCommonPaths() {
+  const directCandidates = [
+    "/usr/bin/java",
+    "/usr/local/bin/java",
+  ];
+
+  for (const javaPath of directCandidates) {
+    if (!isFile(javaPath)) {
+      continue;
+    }
+
+    const home = deriveJavaHomeFromJavaBin(javaPath);
+    if (home) {
+      return home;
+    }
+  }
+
+  const roots = [
+    "/usr/lib/jvm",
+    "/usr/java",
+    "/opt/java",
+    "/opt/jdk",
+  ];
+
+  for (const root of roots) {
+    if (!isDirectory(root)) {
+      continue;
+    }
+
+    let children = [];
+    try {
+      children = fs.readdirSync(root, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort((a, b) => b.localeCompare(a));
+    } catch {
+      continue;
+    }
+
+    for (const child of children) {
+      const candidate = path.join(root, child);
+      if (isFile(path.join(candidate, "bin", "java"))) {
+        return candidate;
+      }
+    }
+  }
+
+  return "";
 }
 
 function detectFromMacJavaHomeCommand() {
@@ -197,6 +276,16 @@ function detectAutoJavaHome(platform) {
       javaHome: fromCommand,
       source: "auto-java-command",
     };
+  }
+
+  if (platform === "linux") {
+    const fromLinuxPath = detectFromLinuxCommonPaths();
+    if (fromLinuxPath) {
+      return {
+        javaHome: fromLinuxPath,
+        source: "auto-linux-common-path",
+      };
+    }
   }
 
   return { javaHome: "", source: "none" };

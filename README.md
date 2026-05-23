@@ -195,6 +195,7 @@ npm install
 - `JAVA_HOME` 支持自动识别：
   - macOS：优先使用 `/usr/libexec/java_home` 自动探测。
   - Windows：优先使用 `where java`，其次扫描常见 JDK 安装目录。
+  - Linux：优先使用 `which java`，其次扫描常见 JDK 目录（如 `/usr/lib/jvm`、`/usr/java`）。
   - 若配置文件中的 `JAVA_HOME` 无效，系统会回退到自动探测结果（doctor 会提示）。
 
 查看当前 Java 路径可用命令：
