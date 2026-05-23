@@ -210,6 +210,7 @@ npm start
 - Java trust store 命令与脚本支持：
   - `npm run truststore:print`
   - `npm run truststore:init`
+  - `npm run truststore:merge -- --source <src.jks> --target <dest.jks>`
 
 ### 8.4 上级代理配置
 
@@ -262,3 +263,63 @@ Get-ChildItem -Recurse -File .\data\cache -Filter '*.temp'
 curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/lodash
 curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz
 ```
+
+### 8.5 Trust Store 合并（merge）
+
+当你已经有两个 trust store（例如一个团队公共 trust store + 一个项目专用 trust store）时，可使用 `merge` 子命令合并。
+
+1. 查看帮助（脚本会输出参数错误）：
+
+```powershell
+npm run truststore:merge -- --help
+```
+
+2. 合并源 trust store 到目标 trust store（默认类型 `JKS`，默认冲突策略 `fail`）：
+
+```powershell
+npm run truststore:merge -- \
+  --source .\data\certs\source-truststore.jks \
+  --target .\data\certs\proxy-truststore.jks \
+  --source-pass changeit \
+  --target-pass changeit
+```
+
+3. 若允许同名 alias 覆盖，增加 `--on-conflict overwrite`：
+
+```powershell
+npm run truststore:merge -- \
+  --source .\data\certs\source-truststore.jks \
+  --target .\data\certs\proxy-truststore.jks \
+  --source-pass changeit \
+  --target-pass changeit \
+  --on-conflict overwrite
+```
+
+4. 仅做预检（不导入、不改文件），增加 `--dry-run`：
+
+```powershell
+npm run truststore:merge -- \
+  --source .\data\certs\source-truststore.jks \
+  --target .\data\certs\proxy-truststore.jks \
+  --source-pass changeit \
+  --target-pass changeit \
+  --dry-run
+```
+
+5. 可选参数：
+
+- `--source-type`：源 trust store 类型，默认 `JKS`。
+- `--target-type`：目标 trust store 类型，默认 `JKS`。
+- `--on-conflict`：`fail` 或 `overwrite`，默认 `fail`。
+- `--dry-run`：只做参数与冲突校验，不执行导入。
+
+6. macOS/Linux 示例：
+
+```bash
+npm run truststore:merge -- \
+  --source ./data/certs/source-truststore.jks \
+  --target ./data/certs/proxy-truststore.jks \
+  --source-pass changeit \
+  --target-pass changeit
+```
+
