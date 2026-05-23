@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import dotenv from "dotenv";
+import { detectJavaHome } from "../common/java-home.js";
 
 const cwd = process.cwd();
 const userConfigDir = path.resolve(os.homedir(), "maven-proxy");
@@ -85,6 +86,7 @@ const loadedConfigFile = loadEnvFromFile(resolvedConfigFilePath);
 const configBaseDir = configMode === "development"
   ? cwd
   : (resolvedConfigFilePath ? path.dirname(resolvedConfigFilePath) : userConfigDir);
+const javaHomeResolution = detectJavaHome(process.env.JAVA_HOME || "");
 
 function toBool(value, defaultValue) {
   if (value == null || value === "") {
@@ -198,7 +200,9 @@ export const config = {
   trustStorePath: path.resolve(configBaseDir, process.env.TRUST_STORE_PATH || "data/certs/proxy-truststore.jks"),
   trustStoreAlias: process.env.TRUST_STORE_ALIAS || "maven-proxy-root-ca",
   trustStorePassword: process.env.TRUST_STORE_PASSWORD || "changeit",
-  javaHome: process.env.JAVA_HOME || "",
+  javaHome: javaHomeResolution.javaHome,
+  javaHomeSource: javaHomeResolution.source,
+  javaHomeConfigured: javaHomeResolution.configuredJavaHome || "",
   httpsPassthroughForUnmatched: toBool(process.env.HTTPS_PASSTHROUGH_FOR_UNMATCHED, true),
   upstreamProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_PROXY_URL || process.env.ALL_PROXY || process.env.all_proxy || ""),
   upstreamHttpProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_HTTP_PROXY_URL || process.env.HTTP_PROXY || process.env.http_proxy || ""),

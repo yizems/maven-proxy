@@ -314,6 +314,12 @@ async function runDoctor(options) {
     printDoctorLine("FAIL", "keytool", keytool.message);
   }
 
+  printDoctorLine("INFO", "JAVA_HOME source", config.javaHomeSource || "unknown");
+  if (config.javaHomeSource === "auto-fallback" && config.javaHomeConfigured) {
+    warnings.push("configured JAVA_HOME invalid, auto fallback used");
+    printDoctorLine("WARN", "JAVA_HOME configured", `invalid: ${config.javaHomeConfigured}`);
+  }
+
   if (config.javaHome) {
     const javaHomeExists = checkPathExists(config.javaHome).ok;
     if (javaHomeExists) {
