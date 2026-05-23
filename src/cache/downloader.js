@@ -3,6 +3,7 @@ import http from "node:http";
 import https from "node:https";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
+import { DownloadLogWriter } from "../common/download-log-writer.js";
 
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
@@ -241,6 +242,18 @@ export class Downloader {
     this.domainMatcher = domainMatcher;
     this.upstreamProxyManager = upstreamProxyManager;
     this.inflight = new Map();
+    this.downloadLogWriter = new DownloadLogWriter(config.downloadLogDir, config.logRetentionDays);
+  }
+
+  logDownload(event, urlObj, details = {}) {
+    const url = typeof urlObj === "string" ? urlObj : urlObj?.href;
+    const detailText = Object.entries(details)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => `${key}=${value}`)
+      .join(" ");
+
+    console.log(`[downloader] ${event} url=${url}${detailText ? ` ${detailText}` : ""}`);
+    this.downloadLogWriter.write(event, url, details);
   }
 
   async ensureCached(urlObj, finalPath, requestHeaders = {}) {
@@ -280,8 +293,13 @@ export class Downloader {
       const downloadUrl = metadata.finalUrl;
       const hostname = downloadUrl.hostname;
 
+      this.logDownload("download start", downloadUrl, { host: hostname, targetPath: finalPath });
+
       if (getAgent && this.upstreamProxyManager.hasProxyFor(downloadUrl.protocol, hostname)) {
-        console.log(`[downloader] outbound via upstream proxy host=${hostname} protocol=${downloadUrl.protocol}`);
+        this.logDownload("outbound via upstream proxy", downloadUrl, {
+          host: hostname,
+          protocol: downloadUrl.protocol,
+        });
       }
 
       const shouldUseMulti =
@@ -291,9 +309,11 @@ export class Downloader {
         metadata.acceptRanges;
 
       if (shouldUseMulti) {
-        console.log(
-          `[downloader] multi-thread download enabled host=${hostname} size=${metadata.contentLength} threads=${this.config.multiThreadCount}`,
-        );
+        this.logDownload("multi-thread download enabled", downloadUrl, {
+          host: hostname,
+          size: metadata.contentLength,
+          threads: this.config.multiThreadCount,
+        });
         try {
           await downloadMultiThread(
             downloadUrl,
@@ -306,11 +326,14 @@ export class Downloader {
           );
         } catch (error) {
           await removeIfExists(tempPath);
-          console.log(`[downloader] multi-thread fallback to single-thread host=${hostname} reason=${error.message}`);
+          this.logDownload("multi-thread fallback to single-thread", downloadUrl, {
+            host: hostname,
+            reason: error.message,
+          });
           await downloadSingle(downloadUrl, tempPath, headers, this.config.downloadTimeoutMs, getAgent);
         }
       } else {
-        console.log(`[downloader] single-thread download host=${hostname}`);
+        this.logDownload("single-thread download", downloadUrl, { host: hostname });
         const single = await downloadSingle(downloadUrl, tempPath, headers, this.config.downloadTimeoutMs, getAgent);
         if (single.contentLength != null) {
           metadata.contentLength = single.contentLength;

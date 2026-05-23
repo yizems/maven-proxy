@@ -121,6 +121,8 @@ export const config = {
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes: Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_BYTES, 1024 * 1024)),
   downloadTimeoutMs: Math.max(1000, toInt(process.env.DOWNLOAD_TIMEOUT_MS, 60000)),
+  downloadLogDir: path.resolve(cwd, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
+  logRetentionDays: Math.max(1, toInt(process.env.LOG_RETENTION_DAYS, 7)),
   certDir: path.resolve(cwd, process.env.CERT_DIR || "data/certs"),
   rootCertPath: path.resolve(cwd, process.env.ROOT_CERT_PATH || "data/certs/root-ca.crt"),
   rootKeyPath: path.resolve(cwd, process.env.ROOT_KEY_PATH || "data/certs/root-ca.key.pem"),

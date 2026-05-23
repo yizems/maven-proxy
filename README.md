@@ -206,6 +206,10 @@ npm start
 - 支持上级代理（出站请求与 CONNECT 透传可经上级代理转发）。
 - 支持 npm 代理请求（registry 元数据与 tarball）。
 - 缓存按生态分目录：`cache/maven`、`cache/npm`、`cache/generic`。
+- 日志单独落盘：
+  - 记录每个下载包完整 URL（`download-YYYY-MM-DD.log`）。
+  - 同步写入运行期 `console.log`（`console-YYYY-MM-DD.log`）。
+  - 日志文件按天切分，默认仅保留最近 7 天。
 - 本地缓存目录作为 Maven 仓库发布。
 - Java trust store 命令与脚本支持：
   - `npm run truststore:print`
@@ -225,6 +229,8 @@ npm start
 - `NPM_REGISTRY_DOMAINS`: npm 域名识别列表（用于缓存分流），默认：`registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com`。
 - `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名。
+- `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；下载日志与 console 日志都在该目录。
+- `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
 
 说明：
 
