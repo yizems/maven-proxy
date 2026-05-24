@@ -2,6 +2,8 @@
 
 [English](README.md) | [中文](README-zh.md)
 
+[![npm version](https://img.shields.io/npm/v/maven-proxy.svg)](https://www.npmjs.com/package/maven-proxy)
+
 ## 1. Project Positioning
 
 This project is a Maven proxy service used to improve dependency download speed and stability for Maven and Gradle.

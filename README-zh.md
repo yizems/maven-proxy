@@ -2,6 +2,8 @@
 
 [English](README.md) | [中文](README-zh.md)
 
+[![npm version](https://img.shields.io/npm/v/maven-proxy.svg)](https://www.npmjs.com/package/maven-proxy)
+
 ## 1. 项目定位
 本项目是一个 Maven 代理服务（Maven Proxy），用于在团队或本机环境中加速与稳定 Maven/Gradle 依赖下载。
 
