@@ -80,6 +80,12 @@ function sendErrorText(res, statusCode, message, context = "proxy") {
   sendText(res, statusCode, message);
 }
 
+export function isPositiveAffinityEligible(fileName) {
+  const lower = String(fileName || "").toLowerCase();
+  const base = lower.replace(/\.(sha1|sha256|sha512|md5|asc)$/i, "");
+  return /\.(jar|aar|war)$/i.test(base);
+}
+
 function buildUrl(req, forcedProtocol = null) {
   const raw = req.url || "/";
   if (/^https?:\/\//i.test(raw)) {
@@ -208,11 +214,13 @@ export function createHttpRequestHandler({
     }
 
     if (canonical && mavenAffinityIndex) {
-      const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
-      if (preferredPath) {
-        console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
-        await serveFile(res, req, preferredPath);
-        return;
+      if (isPositiveAffinityEligible(canonical.fileName)) {
+        const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
+        if (preferredPath) {
+          console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
+          await serveFile(res, req, preferredPath);
+          return;
+        }
       }
 
       if (mavenAffinityIndex.shouldSkipRequest(canonical.canonicalKey, urlObj)) {
@@ -226,7 +234,7 @@ export function createHttpRequestHandler({
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
 
-      if (canonical && mavenAffinityIndex) {
+      if (canonical && mavenAffinityIndex && isPositiveAffinityEligible(canonical.fileName)) {
         mavenAffinityIndex.recordSuccess({
           canonicalKey: canonical.canonicalKey,
           host: urlObj.hostname,

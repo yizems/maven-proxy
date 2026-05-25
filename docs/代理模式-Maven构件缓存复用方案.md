@@ -50,6 +50,7 @@
 - key: `canonicalKey`（即归一化后的 `group/artifact/version/file`）
 - value: `cachePath`, `fileName`, `host`, `updatedAt`
 - 过期策略：无 TTL，不做时间过期；仅在本地文件不存在或发生冲突时移除
+- 适用范围：仅二进制资产（`jar|aar|war` 及其签名/校验后缀）参与正向复用；`pom|module` 不做跨仓库正向复用
 
 作用：
 - 当 URL 原路径未命中时，优先查正向索引，命中则直接返回缓存文件。
@@ -92,7 +93,7 @@
 
 1. 按现有逻辑计算 URL 路径缓存键并先查文件。
 2. 若为 Maven 且识别成功：
-   - 查 positive 索引：命中则直接返回缓存文件（affinity hit）。
+  - 若为二进制资产，查 positive 索引：命中则直接返回缓存文件（affinity hit）。
    - 查 negative 索引：命中且未过期则直接 404（negative skip）。
 3. 未命中则正常回源下载。
 4. 下载成功后写 positive。

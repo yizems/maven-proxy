@@ -13,8 +13,8 @@ const REPO_PORT = 19181;
 const MOCK_A_PORT = 19191;
 const MOCK_B_PORT = 19192;
 
-const RELATIVE_A = "/maven2/com/acme/demo/1.0.0/demo-1.0.0.pom";
-const RELATIVE_B = "/repository/maven-public/com/acme/demo/1.0.0/demo-1.0.0.pom";
+const RELATIVE_A = "/maven2/com/acme/demo/1.0.0/demo-1.0.0.jar";
+const RELATIVE_B = "/repository/maven-public/com/acme/demo/1.0.0/demo-1.0.0.jar";
 
 const TARGET_URL_A = `http://127.0.0.1:${MOCK_A_PORT}${RELATIVE_A}`;
 const TARGET_URL_B = `http://127.0.0.1:${MOCK_B_PORT}${RELATIVE_B}`;
@@ -111,9 +111,9 @@ function startMockRepos() {
     state.repoBRequests += 1;
 
     if ((req.url || "").startsWith(RELATIVE_B)) {
-      const body = "<project><modelVersion>4.0.0</modelVersion><groupId>com.acme</groupId><artifactId>demo</artifactId><version>1.0.0</version></project>";
+      const body = "demo-binary-jar-content";
       res.writeHead(200, {
-        "content-type": "application/xml; charset=utf-8",
+        "content-type": "application/java-archive",
         "content-length": String(Buffer.byteLength(body)),
         "accept-ranges": "bytes",
       });
