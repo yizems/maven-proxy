@@ -150,7 +150,7 @@ function getDefaultConfigTemplate() {
     "REPO_FALLBACK_REPOS=https://repo1.maven.org/maven2,https://jitpack.io,https://plugins.gradle.org/m2,https://maven.google.com",
     "ENABLE_HTTPS_PROXY=true",
     "HTTPS_MITM_DOMAINS=repo1.maven.org,repo.maven.apache.org,registry.npmjs.org",
-    "HTTPS_PASSTHROUGH_FOR_UNMATCHED=true",
+    "HTTPS_PASSTHROUGH_FOR_UNMATCHED=false",
     "NPM_REGISTRY_DOMAINS=registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com",
     "MAVEN_REPO_DOMAINS=repo1.maven.org,repo.maven.apache.org,jitpack.io,plugins.gradle.org,maven.google.com",
     "MULTI_THREAD_DOMAINS=repo1.maven.org",

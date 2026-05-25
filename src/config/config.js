@@ -231,7 +231,7 @@ export const config = {
   javaHome: javaHomeResolution.javaHome,
   javaHomeSource: javaHomeResolution.source,
   javaHomeConfigured: javaHomeResolution.configuredJavaHome || "",
-  httpsPassthroughForUnmatched: toBool(process.env.HTTPS_PASSTHROUGH_FOR_UNMATCHED, true),
+  httpsPassthroughForUnmatched: toBool(process.env.HTTPS_PASSTHROUGH_FOR_UNMATCHED, false),
   upstreamProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_PROXY_URL || process.env.ALL_PROXY || process.env.all_proxy || ""),
   upstreamHttpProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_HTTP_PROXY_URL || process.env.HTTP_PROXY || process.env.http_proxy || ""),
   upstreamHttpsProxyUrl: normalizeProxyUrl(process.env.UPSTREAM_HTTPS_PROXY_URL || process.env.HTTPS_PROXY || process.env.https_proxy || ""),

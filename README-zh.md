@@ -282,7 +282,7 @@ npm start
 - `REPO_FALLBACK_REPOS`: 缓存未命中时的回源仓库地址列表（逗号分隔）。
 - `ENABLE_HTTPS_PROXY`: 是否启用 HTTPS 代理处理（`true/false`）。
 - `HTTPS_MITM_DOMAINS`: 需要执行 MITM 证书签发的域名列表（逗号分隔，支持通配符）。
-- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: 未命中 MITM 域名时是否允许直连隧道透传。
+- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: 未命中 MITM 域名时是否允许直连隧道透传。默认 `false`。
 - `NPM_REGISTRY_DOMAINS`: 识别为 npm 生态并分流缓存的域名列表（支持通配符）。
 - `MAVEN_REPO_DOMAINS`: 识别为 Maven 生态并分流缓存的域名列表（支持通配符）。
 - `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。

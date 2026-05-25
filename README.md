@@ -295,7 +295,7 @@ Priority:
 - `REPO_FALLBACK_REPOS`: Comma-separated fallback repository URLs for cache misses.
 - `ENABLE_HTTPS_PROXY`: Enable HTTPS proxy handling (`true/false`).
 - `HTTPS_MITM_DOMAINS`: Comma-separated domains to apply MITM certificate issuance (wildcards supported).
-- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: Whether unmatched HTTPS domains are tunneled directly.
+- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: Whether unmatched HTTPS domains are tunneled directly. Default `false`.
 - `NPM_REGISTRY_DOMAINS`: Domains treated as npm ecosystem for cache routing (wildcards supported).
 - `MAVEN_REPO_DOMAINS`: Domains treated as Maven ecosystem for cache routing (wildcards supported).
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
