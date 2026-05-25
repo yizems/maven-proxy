@@ -262,17 +262,17 @@ npm start
 - `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流，支持通配符），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名（支持通配符）。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；统一主日志与错误日志都在该目录。
-- `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
+- `LOG_RETENTION`: 日志保留时长（支持 `s/m/h/d`），默认 `7d`，超过该时长的历史日志会自动清理。
 - `LOG_TO_STDOUT`: 是否同时输出运行期日志到命令行；启动日志始终输出，默认 `true`。
 - `LOG_CONNECT_EVENTS`: 是否输出详细 CONNECT/MITM 握手日志，默认 `false`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池，默认 `true`。
-- `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒），默认 `1`。
+- `OUTBOUND_KEEP_ALIVE_INTERVAL`: keep-alive 间隔（支持 `s/m/h/d`），默认 `1s`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站保留的空闲连接上限，默认 `16`。
 - `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 索引。
 - `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录，默认 `data/index`。
-- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时）。
-- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: affinity 事件日志 flush 周期（秒）。
+- `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`），例如 `24h`。
+- `MAVEN_AFFINITY_FLUSH_INTERVAL`: affinity 事件日志 flush 周期（支持 `s/m/h/d`），例如 `5s`。
 - `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
 - `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
@@ -315,19 +315,19 @@ npm start
 - `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。
 - `MULTI_THREAD_COUNT`: 多线程下载线程数。
 - `MULTI_THREAD_MIN_SIZE_MB`: 触发多线程下载的最小文件大小阈值（MB）。
-- `DOWNLOAD_TIMEOUT_SECONDS`: 上游请求超时时间（秒）。
+- `DOWNLOAD_TIMEOUT`: 上游请求超时时间（支持 `s/m/h/d`）。默认 `60s`。
 - `DOWNLOAD_LOG_DIR`: 统一主日志与错误日志目录。
-- `LOG_RETENTION_DAYS`: 日志保留天数。
+- `LOG_RETENTION`: 日志保留时长（支持 `s/m/h/d`）。默认 `7d`。
 - `LOG_TO_STDOUT`: 是否输出运行期日志到命令行。启动日志始终输出。默认 `true`。
 - `LOG_CONNECT_EVENTS`: 是否输出详细 CONNECT/MITM 握手日志。默认 `false`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池。默认 `true`。
-- `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒）。默认 `1`。
+- `OUTBOUND_KEEP_ALIVE_INTERVAL`: keep-alive 间隔（支持 `s/m/h/d`）。默认 `1s`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站可保留的空闲连接上限。默认 `16`。
 - `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 缓存索引。默认 `true`。
 - `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录。默认 `data/index`。
-- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时）。默认 `24`。
-- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: affinity 事件日志 flush 周期（秒）。默认 `5`。
+- `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`）。默认 `24h`。
+- `MAVEN_AFFINITY_FLUSH_INTERVAL`: affinity 事件日志 flush 周期（支持 `s/m/h/d`）。默认 `5s`。
 - `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。默认 `8`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
 - `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。

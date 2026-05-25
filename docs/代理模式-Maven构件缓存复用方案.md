@@ -85,7 +85,7 @@
 
 ### 6.3 写入策略
 - 状态变化先写入内存并排队事件。
-- 按 `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS` 周期 append 到事件日志。
+- 按 `MAVEN_AFFINITY_FLUSH_INTERVAL` 周期 append 到事件日志。
 - 事件日志超过 `MAVEN_AFFINITY_EVENT_MAX_MB` 时生成快照并清空日志。
 - 退出时强制 flush + snapshot。
 
@@ -103,8 +103,8 @@
 
 - `MAVEN_AFFINITY_ENABLED`: 是否启用，默认 `true`
 - `MAVEN_AFFINITY_INDEX_DIR`: 索引目录，默认 `data/index`（相对配置基准目录）
-- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时），默认 `24`
-- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: flush 周期（秒），默认 `5`
+- `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`），默认 `24h`
+- `MAVEN_AFFINITY_FLUSH_INTERVAL`: flush 周期（支持 `s/m/h/d`），默认 `5s`
 - `MAVEN_AFFINITY_EVENT_MAX_MB`: 事件日志压缩阈值（MB），默认 `8`
 
 ## 9. 首期范围与后续

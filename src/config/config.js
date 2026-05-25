@@ -99,6 +99,38 @@ function toInt(value, defaultValue) {
   return Number.isFinite(parsed) ? parsed : defaultValue;
 }
 
+function parseDurationToMs(value, fallbackMs) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return fallbackMs;
+  }
+
+  const match = text.match(/^(\d+)([smhd])$/i);
+  if (!match) {
+    return fallbackMs;
+  }
+
+  const amount = Number.parseInt(match[1], 10);
+  const unit = String(match[2] || "").toLowerCase();
+  if (!Number.isFinite(amount) || amount < 0) {
+    return fallbackMs;
+  }
+
+  if (unit === "s") {
+    return amount * 1000;
+  }
+
+  if (unit === "m") {
+    return amount * 60 * 1000;
+  }
+
+  if (unit === "h") {
+    return amount * 60 * 60 * 1000;
+  }
+
+  return amount * 24 * 60 * 60 * 1000;
+}
+
 function toList(value, defaultValue = []) {
   if (!value) {
     return defaultValue;
@@ -181,10 +213,17 @@ const defaultMavenRepoDomains = [
 const cacheDir = path.resolve(configBaseDir, process.env.CACHE_DIR || "data/cache");
 
 const multiThreadMinSizeBytes = Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_MB, 1)) * 1024 * 1024;
-const downloadTimeoutMs = Math.max(1, toInt(process.env.DOWNLOAD_TIMEOUT_SECONDS, 60)) * 1000;
-const outboundKeepAliveMsecs = Math.max(1, toInt(process.env.OUTBOUND_KEEP_ALIVE_SECONDS, 1)) * 1000;
-const mavenNegativeCacheTtlMs = Math.max(1, toInt(process.env.MAVEN_NEGATIVE_CACHE_TTL_HOURS, 24)) * 60 * 60 * 1000;
-const mavenAffinityFlushIntervalMs = Math.max(1, toInt(process.env.MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS, 5)) * 1000;
+const downloadTimeout = process.env.DOWNLOAD_TIMEOUT || "60s";
+const outboundKeepAliveInterval = process.env.OUTBOUND_KEEP_ALIVE_INTERVAL || "1s";
+const mavenNegativeCacheTtl = process.env.MAVEN_NEGATIVE_CACHE_TTL || "24h";
+const mavenAffinityFlushInterval = process.env.MAVEN_AFFINITY_FLUSH_INTERVAL || "5s";
+const logRetention = process.env.LOG_RETENTION || "7d";
+
+const downloadTimeoutMs = Math.max(1, parseDurationToMs(downloadTimeout, 60 * 1000));
+const outboundKeepAliveMsecs = Math.max(1, parseDurationToMs(outboundKeepAliveInterval, 1000));
+const mavenNegativeCacheTtlMs = Math.max(1, parseDurationToMs(mavenNegativeCacheTtl, 24 * 60 * 60 * 1000));
+const mavenAffinityFlushIntervalMs = Math.max(1, parseDurationToMs(mavenAffinityFlushInterval, 5 * 1000));
+const logRetentionDays = Math.max(1, Math.ceil(parseDurationToMs(logRetention, 7 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)));
 const mavenAffinityEventMaxBytes = Math.max(1, toInt(process.env.MAVEN_AFFINITY_EVENT_MAX_MB, 8)) * 1024 * 1024;
 
 export const config = {
@@ -205,14 +244,18 @@ export const config = {
   multiThreadDomains: toList(process.env.MULTI_THREAD_DOMAINS, ["repo1.maven.org"]),
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes,
+  downloadTimeout,
   downloadTimeoutMs,
   outboundKeepAlive: toBool(process.env.OUTBOUND_KEEP_ALIVE, true),
+  outboundKeepAliveInterval,
   outboundKeepAliveMsecs,
   outboundMaxSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_SOCKETS, 64)),
   outboundMaxFreeSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_FREE_SOCKETS, 16)),
   mavenAffinityEnabled: toBool(process.env.MAVEN_AFFINITY_ENABLED, true),
   mavenAffinityIndexDir: path.resolve(configBaseDir, process.env.MAVEN_AFFINITY_INDEX_DIR || "data/index"),
+  mavenNegativeCacheTtl,
   mavenNegativeCacheTtlMs,
+  mavenAffinityFlushInterval,
   mavenAffinityFlushIntervalMs,
   mavenAffinityEventMaxBytes,
   cacheCleanupEnabled: toBool(process.env.CACHE_CLEANUP_ENABLED, true),
@@ -227,7 +270,8 @@ export const config = {
   cacheMaxSize: process.env.CACHE_MAX_SIZE || "",
   cacheTargetSize: process.env.CACHE_TARGET_SIZE || "",
   downloadLogDir: path.resolve(configBaseDir, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
-  logRetentionDays: Math.max(1, toInt(process.env.LOG_RETENTION_DAYS, 7)),
+  logRetention,
+  logRetentionDays,
   logToStdout: toBool(process.env.LOG_TO_STDOUT, true),
   logConnectEvents: toBool(process.env.LOG_CONNECT_EVENTS, false),
   certDir: path.resolve(configBaseDir, process.env.CERT_DIR || "data/certs"),

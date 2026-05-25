@@ -277,17 +277,17 @@ Environment variables:
 - MAVEN_REPO_DOMAINS: maven domains for ecosystem routing (wildcards supported).
 - HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
-- LOG_RETENTION_DAYS: number of days to retain logs.
+- LOG_RETENTION: log retention duration (supports s/m/h/d), for example 7d.
 - LOG_TO_STDOUT: whether to also print runtime logs to stdout/stderr; startup logs are always printed.
 - LOG_CONNECT_EVENTS: whether to print verbose CONNECT/MITM handshake logs. Default false.
 - OUTBOUND_KEEP_ALIVE: enable outbound keep-alive connection pooling.
-- OUTBOUND_KEEP_ALIVE_SECONDS: keep-alive interval in seconds.
+- OUTBOUND_KEEP_ALIVE_INTERVAL: keep-alive interval (supports s/m/h/d), for example 1s.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
 - OUTBOUND_MAX_FREE_SOCKETS: max idle outbound sockets per origin.
 - MAVEN_AFFINITY_ENABLED: enable Maven affinity index.
 - MAVEN_AFFINITY_INDEX_DIR: Maven affinity index directory. Default data/index.
-- MAVEN_NEGATIVE_CACHE_TTL_HOURS: negative cache TTL in hours.
-- MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS: flush interval for affinity event log in seconds.
+- MAVEN_NEGATIVE_CACHE_TTL: negative cache TTL (supports s/m/h/d), for example 24h.
+- MAVEN_AFFINITY_FLUSH_INTERVAL: flush interval for affinity event log (supports s/m/h/d), for example 5s.
 - MAVEN_AFFINITY_EVENT_MAX_MB: max size threshold for affinity event log compaction in MB.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
 - MAVEN_PROXY_CONFIG_FILE: explicit config file path.
@@ -328,19 +328,19 @@ Priority:
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
 - `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (MB).
-- `DOWNLOAD_TIMEOUT_SECONDS`: Upstream request timeout in seconds.
+- `DOWNLOAD_TIMEOUT`: Upstream request timeout (supports `s/m/h/d`). Default `60s`.
 - `DOWNLOAD_LOG_DIR`: Directory for unified app/error logs.
-- `LOG_RETENTION_DAYS`: Number of days to keep log files.
+- `LOG_RETENTION`: Log retention duration (supports `s/m/h/d`). Default `7d`.
 - `LOG_TO_STDOUT`: Whether to also print runtime logs to stdout/stderr. Startup logs are always printed. Default `true`.
 - `LOG_CONNECT_EVENTS`: Whether to print verbose CONNECT/MITM handshake logs. Default `false`.
 - `OUTBOUND_KEEP_ALIVE`: Enable outbound keep-alive connection pooling. Default `true`.
-- `OUTBOUND_KEEP_ALIVE_SECONDS`: Keep-alive interval in seconds. Default `1`.
+- `OUTBOUND_KEEP_ALIVE_INTERVAL`: Keep-alive interval (supports `s/m/h/d`). Default `1s`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.
 - `OUTBOUND_MAX_FREE_SOCKETS`: Max idle outbound sockets per origin. Default `16`.
 - `MAVEN_AFFINITY_ENABLED`: Enable Maven affinity cache index. Default `true`.
 - `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity index directory. Default `data/index`.
-- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: Negative cache TTL in hours. Default `24`.
-- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: Flush interval for affinity event log in seconds. Default `5`.
+- `MAVEN_NEGATIVE_CACHE_TTL`: Negative cache TTL (supports `s/m/h/d`). Default `24h`.
+- `MAVEN_AFFINITY_FLUSH_INTERVAL`: Flush interval for affinity event log (supports `s/m/h/d`). Default `5s`.
 - `MAVEN_AFFINITY_EVENT_MAX_MB`: Max size threshold for affinity event log compaction in MB. Default `8`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
 - `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
