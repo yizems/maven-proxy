@@ -511,6 +511,8 @@ org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/d
 
 说明：`trustStore` 路径建议与你的 `TRUST_STORE_PATH` 保持一致。
 
+补充：建议始终同时配置 `trustStorePassword`。若采用 `systemProp.javax.net.ssl.trustStore` 写法，也请同时配置 `systemProp.javax.net.ssl.trustStorePassword`；
+
 ### 9.2 npm: 设置代理 + 忽略 SSL 校验
 
 > 仅用于本地开发排障。长期使用建议导入 Root CA 并保持 `strict-ssl=true`。

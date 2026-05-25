@@ -433,6 +433,8 @@ org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/d
 ./gradlew --refresh-dependencies dependencies
 ```
 
+Note: always set `trustStorePassword` together with `trustStore`. If you use `systemProp.javax.net.ssl.trustStore`, also set `systemProp.javax.net.ssl.trustStorePassword`.
+
 ### 9.2 npm: Proxy + SSL behavior
 
 For local troubleshooting only, you can disable strict SSL temporarily. Recommended long-term approach is to import Root CA and keep strict SSL enabled.
