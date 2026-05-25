@@ -20,7 +20,9 @@ async function openConnectUpstreamSocket(targetHost, targetPort, timeoutMs, upst
     upstreamProxyManager.hasProxyFor("https:", targetHost);
 
   if (useUpstreamProxy) {
-    console.log(`[proxy] CONNECT via upstream target=${targetHost}:${targetPort}`);
+    if (upstreamProxyManager?.config?.logConnectEvents) {
+      console.log(`[proxy] CONNECT via upstream target=${targetHost}:${targetPort}`);
+    }
     const tunnel = await upstreamProxyManager.createConnectTunnel(targetHost, targetPort, timeoutMs);
     return {
       upstreamSocket: tunnel.socket,
@@ -81,9 +83,13 @@ async function handlePassThroughConnect(clientSocket, head, targetHost, targetPo
 }
 
 async function handleMitmConnect(clientSocket, head, targetHost, certManager, mitmHttpServer) {
-  console.log(`[proxy] MITM prepare ${targetHost}`);
+  if (certManager?.config?.logConnectEvents) {
+    console.log(`[proxy] MITM prepare ${targetHost}`);
+  }
   const leaf = await certManager.getOrCreateLeaf(targetHost);
-  console.log(`[proxy] MITM cert ready ${targetHost}`);
+  if (certManager?.config?.logConnectEvents) {
+    console.log(`[proxy] MITM cert ready ${targetHost}`);
+  }
 
   await new Promise((resolve, reject) => {
     writeTunnelResponse(clientSocket, "HTTP/1.1 200 Connection Established", (error) => {
@@ -94,7 +100,9 @@ async function handleMitmConnect(clientSocket, head, targetHost, certManager, mi
       resolve();
     });
   });
-  console.log(`[proxy] MITM tunnel established ${targetHost}`);
+  if (certManager?.config?.logConnectEvents) {
+    console.log(`[proxy] MITM tunnel established ${targetHost}`);
+  }
 
   const tlsSocket = new tls.TLSSocket(clientSocket, {
     isServer: true,
@@ -138,7 +146,9 @@ export function attachConnectHandler(server, {
       config.enableHttpsProxy &&
       matchesDomain(host, config.httpsMitmDomains);
 
-    console.log(`[proxy] CONNECT ${host}:${port} mitm=${mitmEnabled}`);
+    if (config.logConnectEvents) {
+      console.log(`[proxy] CONNECT ${host}:${port} mitm=${mitmEnabled}`);
+    }
 
     if (!mitmEnabled) {
       if (!config.httpsPassthroughForUnmatched) {

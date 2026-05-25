@@ -121,6 +121,7 @@ async function main() {
   startupInfo(`[maven-proxy] log dir: ${config.downloadLogDir}`);
   startupInfo(`[maven-proxy] log retention days: ${config.logRetentionDays}`);
   startupInfo(`[maven-proxy] log to stdout: ${config.logToStdout}`);
+  startupInfo(`[maven-proxy] log connect events: ${config.logConnectEvents}`);
   startupInfo(`[maven-proxy] outbound keep-alive: ${config.outboundKeepAlive}`);
   startupInfo(`[maven-proxy] outbound keepAlive(seconds): ${config.outboundKeepAliveMsecs / 1000}`);
   startupInfo(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);

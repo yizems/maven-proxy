@@ -268,6 +268,7 @@ Environment variables:
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION_DAYS: number of days to retain logs.
 - LOG_TO_STDOUT: whether to also print runtime logs to stdout/stderr; startup logs are always printed.
+- LOG_CONNECT_EVENTS: whether to print verbose CONNECT/MITM handshake logs. Default false.
 - OUTBOUND_KEEP_ALIVE: enable outbound keep-alive connection pooling.
 - OUTBOUND_KEEP_ALIVE_SECONDS: keep-alive interval in seconds.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
@@ -304,6 +305,7 @@ Priority:
 - `DOWNLOAD_LOG_DIR`: Directory for unified app/error logs.
 - `LOG_RETENTION_DAYS`: Number of days to keep log files.
 - `LOG_TO_STDOUT`: Whether to also print runtime logs to stdout/stderr. Startup logs are always printed. Default `true`.
+- `LOG_CONNECT_EVENTS`: Whether to print verbose CONNECT/MITM handshake logs. Default `false`.
 - `OUTBOUND_KEEP_ALIVE`: Enable outbound keep-alive connection pooling. Default `true`.
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: Keep-alive interval in seconds. Default `1`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.

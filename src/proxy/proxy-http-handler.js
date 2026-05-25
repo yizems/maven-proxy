@@ -209,6 +209,7 @@ export function createHttpRequestHandler({
 
     const existing = await statIfFile(cachePath);
     if (existing) {
+      console.log(`[proxy] local cache hit host=${urlObj.hostname} path=${urlObj.pathname}`);
       await serveFile(res, req, cachePath);
       return;
     }
@@ -231,6 +232,7 @@ export function createHttpRequestHandler({
     }
 
     try {
+      console.log(`[proxy] local cache miss host=${urlObj.hostname} path=${urlObj.pathname}`);
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
 
