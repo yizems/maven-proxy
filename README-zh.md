@@ -434,11 +434,17 @@ maven-proxy
 - `maven-proxy --config /path/to/config`
 - `maven-proxy start --mode development`
 - `maven-proxy start --mode user`
+- `maven-proxy stop`
 - `maven-proxy init-config --force`
 - `maven-proxy truststore print`
 - `maven-proxy truststore init`
 - `maven-proxy truststore merge --source /path/source.jks --target /path/target.jks`
 - `maven-proxy doctor`
+
+启动/停止行为：
+
+- `maven-proxy start` 以后台方式启动并立即返回，不阻塞当前终端。
+- `maven-proxy stop` 通过 PID 文件 `~/maven-proxy/maven-proxy.pid` 停止后台进程。
 
 5. 规则说明：
 
@@ -469,7 +475,8 @@ maven-proxy
 9. 开发阶段快捷命令（npm scripts）：
 
 - `npm run cli:help`: 查看 CLI 帮助。
-- `npm run cli:start`: 以开发模式启动 CLI（等价 `maven-proxy start --mode development`）。
+- `npm run cli:start`: 以开发模式后台启动 CLI（等价 `maven-proxy start --mode development`）。
+- `npm run cli:stop`: 停止后台 CLI 进程（等价 `maven-proxy stop`）。
 - `npm run cli:doctor`: 以开发模式运行 doctor。
 - `npm run cli:truststore:print`: 以开发模式输出 truststore 命令模板。
 - `npm run cli:truststore:init`: 以开发模式初始化 truststore。

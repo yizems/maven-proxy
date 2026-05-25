@@ -17,6 +17,7 @@
     "start:cli": "node bin/maven-proxy.js",
     "cli:help": "node bin/maven-proxy.js --help",
     "cli:start": "node bin/maven-proxy.js start --mode development",
+    "cli:stop": "node bin/maven-proxy.js stop",
     "cli:doctor": "node bin/maven-proxy.js doctor --mode development",
     "cli:truststore:print": "node bin/maven-proxy.js truststore print --mode development",
     "cli:truststore:init": "node bin/maven-proxy.js truststore init --mode development",

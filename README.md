@@ -404,11 +404,16 @@ Common commands:
 - maven-proxy --config /path/to/config
 - maven-proxy start --mode development
 - maven-proxy start --mode user
+- maven-proxy stop
 - maven-proxy init-config --force
 - maven-proxy truststore print
 - maven-proxy truststore init
 - maven-proxy truststore merge --source /path/source.jks --target /path/target.jks
 - maven-proxy doctor
+
+Start/stop behavior:
+- `maven-proxy start` runs in background and returns immediately.
+- `maven-proxy stop` stops the background process using PID file `~/maven-proxy/maven-proxy.pid`.
 
 Doctor command:
 - Checks config loading, port availability, keytool, JAVA_HOME, cert/truststore paths, and writable log/cache directories.

@@ -3,10 +3,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import net from "node:net";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const defaultConfigDir = path.resolve(os.homedir(), "maven-proxy");
 const defaultConfigFile = path.join(defaultConfigDir, "config.properties");
+const daemonPidFile = path.join(defaultConfigDir, "maven-proxy.pid");
+const internalRunCommand = "__run-server";
+const cliFilePath = fileURLToPath(import.meta.url);
 
 function normalizeMode(value) {
   const normalized = String(value || "").trim().toLowerCase();
@@ -54,6 +58,7 @@ function printHelp() {
   console.log("Usage:");
   console.log("  maven-proxy");
   console.log("  maven-proxy start [--mode <development|user>] [--config <file>]");
+  console.log("  maven-proxy stop");
   console.log("  maven-proxy init-config [--force] [--config <file>]");
   console.log("  maven-proxy truststore <print|init|merge> [options]");
   console.log("  maven-proxy doctor [--mode <development|user>] [--config <file>]");
@@ -62,6 +67,7 @@ function printHelp() {
   console.log("  npx maven-proxy");
   console.log("  maven-proxy init-config");
   console.log("  maven-proxy start --mode development");
+  console.log("  maven-proxy stop");
   console.log("  maven-proxy --config ~/maven-proxy/config.properties");
   console.log("  maven-proxy truststore print");
   console.log("  maven-proxy truststore merge --source ./a.jks --target ./b.jks");
@@ -217,10 +223,143 @@ async function ensureAutoConfigIfNeeded(options, command) {
   await initConfigFile(defaultConfigFile, false);
 }
 
-async function startServer(options) {
+async function runServerInCurrentProcess(options) {
   applyConfigOverrides(options);
 
   await import("../src/index.js");
+}
+
+function parsePid(rawText) {
+  const pid = Number.parseInt(String(rawText || "").trim(), 10);
+  return Number.isFinite(pid) && pid > 0 ? pid : 0;
+}
+
+function readDaemonPid() {
+  if (!fs.existsSync(daemonPidFile)) {
+    return 0;
+  }
+
+  try {
+    const text = fs.readFileSync(daemonPidFile, "utf8");
+    return parsePid(text);
+  } catch {
+    return 0;
+  }
+}
+
+function isProcessRunning(pid) {
+  if (!pid) {
+    return false;
+  }
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error && error.code === "EPERM") {
+      return true;
+    }
+    return false;
+  }
+}
+
+async function removeDaemonPidFile() {
+  await fs.promises.rm(daemonPidFile, { force: true });
+}
+
+function waitMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForProcessExit(pid, timeoutMs = 5000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (!isProcessRunning(pid)) {
+      return true;
+    }
+    await waitMs(100);
+  }
+
+  return !isProcessRunning(pid);
+}
+
+async function startServer(options) {
+  await fs.promises.mkdir(defaultConfigDir, { recursive: true });
+
+  const existingPid = readDaemonPid();
+  if (existingPid && isProcessRunning(existingPid)) {
+    console.log(`[maven-proxy] already running (pid=${existingPid})`);
+    console.log(`[maven-proxy] pid file: ${daemonPidFile}`);
+    return;
+  }
+
+  if (existingPid && !isProcessRunning(existingPid)) {
+    await removeDaemonPidFile();
+  }
+
+  const childEnv = {
+    ...process.env,
+    MAVEN_PROXY_CONFIG_MODE: resolveEffectiveMode(options),
+  };
+
+  if (options.configPath) {
+    childEnv.MAVEN_PROXY_CONFIG_FILE = resolvePath(options.configPath);
+  } else {
+    delete childEnv.MAVEN_PROXY_CONFIG_FILE;
+  }
+
+  const child = spawn(
+    process.execPath,
+    [cliFilePath, internalRunCommand, "--mode", resolveEffectiveMode(options)],
+    {
+      cwd: process.cwd(),
+      detached: true,
+      stdio: "ignore",
+      env: childEnv,
+    },
+  );
+
+  child.unref();
+  await fs.promises.writeFile(daemonPidFile, `${child.pid}\n`, "utf8");
+
+  await waitMs(300);
+  if (!isProcessRunning(child.pid)) {
+    await removeDaemonPidFile();
+    throw new Error("start failed: process exited immediately, check app/error logs");
+  }
+
+  console.log(`[maven-proxy] started in background (pid=${child.pid})`);
+  console.log(`[maven-proxy] pid file: ${daemonPidFile}`);
+}
+
+async function stopServer(options) {
+  const pid = readDaemonPid();
+  if (!pid) {
+    console.log("[maven-proxy] not running (pid file not found)");
+    return;
+  }
+
+  if (!isProcessRunning(pid)) {
+    await removeDaemonPidFile();
+    console.log(`[maven-proxy] stale pid removed: ${pid}`);
+    return;
+  }
+
+  process.kill(pid, "SIGTERM");
+  const stopped = await waitForProcessExit(pid, 5000);
+  if (!stopped) {
+    process.kill(pid, "SIGKILL");
+    const forceStopped = await waitForProcessExit(pid, 2000);
+    if (!forceStopped) {
+      throw new Error(`stop failed: unable to terminate pid ${pid}`);
+    }
+  }
+
+  await removeDaemonPidFile();
+  console.log(`[maven-proxy] stopped (pid=${pid})`);
+  if (options.configPath) {
+    console.log(`[maven-proxy] stop requested with config: ${resolvePath(options.configPath)}`);
+  }
 }
 
 function applyConfigOverrides(options) {
@@ -577,11 +716,27 @@ async function main() {
     return;
   }
 
+  if (command === "stop") {
+    if (options.commandArgs.length > 0) {
+      throw new Error(`Unknown argument for stop: ${options.commandArgs[0]}`);
+    }
+    await stopServer(options);
+    return;
+  }
+
   if (command === "start") {
     if (options.commandArgs.length > 0) {
       throw new Error(`Unknown argument for start: ${options.commandArgs[0]}`);
     }
     await startServer(options);
+    return;
+  }
+
+  if (command === internalRunCommand) {
+    if (options.commandArgs.length > 0) {
+      throw new Error(`Unknown argument for ${internalRunCommand}: ${options.commandArgs[0]}`);
+    }
+    await runServerInCurrentProcess(options);
     return;
   }
 
