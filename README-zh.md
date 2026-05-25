@@ -188,12 +188,12 @@ scripts/
 npm install
 ```
 
-2. 按需复制并修改环境变量（参考 `.env.example`）。
+2. 按需创建并修改配置文件（项目根目录 `config.properties`）。
 
 说明：
 
-- 开发模式（默认）：当你在本项目目录运行 `npm start` 时，优先读取项目根目录 `.env`；若不存在则尝试 `.evn`（兼容别名）。
-- 用户模式（CLI 默认）：通过 `npx maven-proxy` 或全局命令运行时，默认读取 `~/maven-proxy/config`。
+- 开发模式（默认）：当你在本项目目录运行 `npm start` 时，读取项目根目录 `config.properties`。
+- 用户模式（CLI 默认）：通过 `npx maven-proxy` 或全局命令运行时，默认读取 `~/maven-proxy/config.properties`。
 - 可通过 `MAVEN_PROXY_CONFIG_MODE` 强制模式（`development` 或 `user`）。
 - 可通过 `MAVEN_PROXY_CONFIG_FILE` 指定配置文件路径。
 - `JAVA_HOME` 支持自动识别：
@@ -416,7 +416,7 @@ npm run truststore:merge -- \
 npx maven-proxy
 ```
 
-说明：首次运行时如果未传 `--config` 且 `~/maven-proxy/config` 不存在，CLI 会自动创建默认配置文件。
+说明：首次运行时如果未传 `--config` 且 `~/maven-proxy/config.properties` 不存在，CLI 会自动创建默认配置文件。
 
 2. 全局安装后运行：
 
@@ -427,7 +427,7 @@ maven-proxy
 
 3. CLI 默认配置路径：
 
-- `~/maven-proxy/config`
+- `~/maven-proxy/config.properties`
 
 4. 常用 CLI 参数：
 
@@ -442,7 +442,7 @@ maven-proxy
 
 5. 规则说明：
 
-- 开发阶段（在项目目录执行 `npm start`）默认使用项目 `.env/.evn`。
+- 开发阶段（在项目目录执行 `npm start`）默认使用项目 `config.properties`。
 - CLI 阶段默认使用用户目录配置文件。
 - 当配置项为相对路径时，会基于当前配置文件所在目录解析。
 

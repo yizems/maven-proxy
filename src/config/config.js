@@ -6,7 +6,7 @@ import { detectJavaHome } from "../common/java-home.js";
 
 const cwd = process.cwd();
 const userConfigDir = path.resolve(os.homedir(), "maven-proxy");
-const defaultUserConfigPath = path.join(userConfigDir, "config");
+const defaultUserConfigPath = path.join(userConfigDir, "config.properties");
 
 function normalizeConfigMode(value) {
   const normalized = String(value || "").trim().toLowerCase();
@@ -55,8 +55,7 @@ function resolveConfigFilePath(configMode) {
 
   if (configMode === "development") {
     const devCandidates = [
-      path.resolve(cwd, ".env"),
-      path.resolve(cwd, ".evn"),
+      path.resolve(cwd, "config.properties"),
     ];
 
     for (const candidate of devCandidates) {

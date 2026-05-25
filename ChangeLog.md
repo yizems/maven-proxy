@@ -19,6 +19,9 @@ All notable changes to this project are documented in this file.
   - `MAVEN_NEGATIVE_CACHE_TTL_HOURS`
   - `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`
   - `MAVEN_AFFINITY_EVENT_MAX_MB`
+- Renamed default configuration file to `config.properties`:
+  - Development mode now loads project-root `config.properties`.
+  - CLI user mode now uses `~/maven-proxy/config.properties`.
 
 ### Changed (from git commits after 1.1.1)
 - Unified logging strategy with optional stdout mirroring (`LOG_TO_STDOUT`) and log output simplification.

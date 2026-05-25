@@ -6,7 +6,7 @@ import net from "node:net";
 import { spawnSync } from "node:child_process";
 
 const defaultConfigDir = path.resolve(os.homedir(), "maven-proxy");
-const defaultConfigFile = path.join(defaultConfigDir, "config");
+const defaultConfigFile = path.join(defaultConfigDir, "config.properties");
 
 function normalizeMode(value) {
   const normalized = String(value || "").trim().toLowerCase();
@@ -44,7 +44,7 @@ function resolveEffectiveMode(options) {
     return forced;
   }
 
-  // CLI defaults to user mode to load ~/maven-proxy/config unless explicitly overridden.
+  // CLI defaults to user mode to load ~/maven-proxy/config.properties unless explicitly overridden.
   return "user";
 }
 
@@ -62,7 +62,7 @@ function printHelp() {
   console.log("  npx maven-proxy");
   console.log("  maven-proxy init-config");
   console.log("  maven-proxy start --mode development");
-  console.log("  maven-proxy --config ~/maven-proxy/config");
+  console.log("  maven-proxy --config ~/maven-proxy/config.properties");
   console.log("  maven-proxy truststore print");
   console.log("  maven-proxy truststore merge --source ./a.jks --target ./b.jks");
   console.log("  maven-proxy doctor");
@@ -314,7 +314,7 @@ async function runDoctor(options) {
     printDoctorLine("WARN", "config file", `not found, expected ${config.defaultUserConfigPath}`);
   } else {
     warnings.push("development config file missing");
-    printDoctorLine("WARN", "config file", "no .env/.evn loaded, using defaults");
+    printDoctorLine("WARN", "config file", "no config.properties loaded, using defaults");
   }
 
   const keytool = checkKeytool();

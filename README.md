@@ -185,8 +185,8 @@ npm install
 2. Configure environment variables as needed.
 
 Notes:
-- Development mode (default): npm start loads .env first, then .evn as fallback alias.
-- User mode (CLI default): npx maven-proxy or global command uses ~/maven-proxy/config.
+- Development mode (default): npm start loads config.properties in the project root.
+- User mode (CLI default): npx maven-proxy or global command uses ~/maven-proxy/config.properties.
 - Override mode with MAVEN_PROXY_CONFIG_MODE as development or user.
 - Override config file path with MAVEN_PROXY_CONFIG_FILE.
 - JAVA_HOME supports auto-detection:
@@ -398,7 +398,7 @@ maven-proxy
 ```
 
 Default CLI config path:
-- ~/maven-proxy/config
+- ~/maven-proxy/config.properties
 
 Common commands:
 - maven-proxy --config /path/to/config
