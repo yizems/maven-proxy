@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.2.1]
+
+### Added
+- Added non-blocking CLI process control: `maven-proxy start` now runs as a background daemon, and `maven-proxy stop` can terminate it via PID file.
+
+### Changed
+- Positive Maven affinity cache entries no longer expire by TTL; they are removed only when local file is missing or conflict is detected.
+- Reduced CONNECT/MITM log noise by adding `LOG_CONNECT_EVENTS` (default `false`).
+- Added explicit proxy logs for `local cache hit` and `local cache miss` to improve cache behavior observability.
+- Changed default `HTTPS_PASSTHROUGH_FOR_UNMATCHED` to `false` in runtime defaults and generated config templates.
+
+### Fixed
+- Startup logs are now always printed even when `LOG_TO_STDOUT=false`, and startup success is explicitly logged.
+- Restricted positive Maven affinity reuse to binary artifacts (`.jar/.aar/.war` and related checksum/signature files), avoiding cross-repository metadata pollution for `.pom/.module`.
+
+### Git Commits Included (after `prepare 1.2.0`)
+- `bbf1771` fix: keep positive affinity cache without ttl
+- `cdb1421` fix: always print startup logs when stdout logging is off
+- `4e8146f` feat: add non-blocking cli start and stop commands
+- `b515910` fix: restrict maven affinity to binary assets
+- `20fb0b9` chore: reduce connect noise and log cache hit miss
+- `f99cf59` chore: default unmatched https passthrough to false
+
 ## [1.2.0]
 
 ### Breaking Changes
