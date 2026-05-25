@@ -241,6 +241,17 @@ npm start
 
 可通过以下环境变量启用上级代理：
 
+- `CACHE_CLEANUP_ENABLED`: 是否启用自动缓存清理。
+- `CACHE_CLEANUP_DAILY_AT`: 每日固定检查时间（本地时区，格式 `HH:mm`），例如 `03:00`。
+- `CACHE_CLEANUP_CHECK_MIN_INTERVAL`: 压力检测最小间隔（支持 `s/m/h/d`），例如 `10m`。
+- `CACHE_TOUCH_ON_HIT`: 缓存命中成功返回时是否更新文件 mtime。
+- `CACHE_TOUCH_MIN_INTERVAL`: 同一文件两次 touch 的最小间隔（支持 `s/m/h/d`），默认 `1d`。
+- `CACHE_RETENTION_START`: 清理轮次初始保留窗口（支持 `s/m/h/d`），默认 `10d`。
+- `CACHE_RETENTION_MIN`: 清理轮次最小保留窗口（支持 `s/m/h/d`），默认 `1d`。
+- `CACHE_DISK_FREE_TRIGGER`: 磁盘剩余空间低于该值时触发清理（支持 `K/M/G/T`），例如 `20G`。
+- `CACHE_DISK_FREE_TARGET`: 磁盘剩余空间恢复到该值时可停止清理（支持 `K/M/G/T`），例如 `25G`。
+- `CACHE_MAX_SIZE`: 可选，缓存总大小触发阈值（支持 `K/M/G/T`）。
+- `CACHE_TARGET_SIZE`: 可选，缓存总大小回落目标（支持 `K/M/G/T`）。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（如 `http://127.0.0.1:8888`）。
 - `UPSTREAM_HTTP_PROXY_URL`: 仅 HTTP 出站使用的上级代理。
 - `UPSTREAM_HTTPS_PROXY_URL`: 仅 HTTPS 出站使用的上级代理。
@@ -258,6 +269,11 @@ npm start
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒），默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站保留的空闲连接上限，默认 `16`。
+- `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 索引。
+- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录，默认 `data/index`。
+- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时）。
+- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: affinity 事件日志 flush 周期（秒）。
+- `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
 - `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
 - `EXISTING_TRUST_STORE_PATH`: 已有 truststore 路径（可选）。若文件存在，`truststore init` 会优先以它作为源。
@@ -279,6 +295,17 @@ npm start
 - `PROXY_PORT`: 代理服务端口，默认 `8080`。
 - `REPO_PORT`: 本地仓库服务端口，默认 `8081`。
 - `CACHE_DIR`: 缓存根目录，默认 `data/cache`。
+- `CACHE_CLEANUP_ENABLED`: 是否启用自动缓存清理。默认 `true`。
+- `CACHE_CLEANUP_DAILY_AT`: 每日固定检查时间（本地时区，格式 `HH:mm`）。默认 `03:00`。
+- `CACHE_CLEANUP_CHECK_MIN_INTERVAL`: 压力检测最小间隔（支持 `s/m/h/d`）。默认 `10m`。
+- `CACHE_TOUCH_ON_HIT`: 缓存命中成功返回时是否更新文件 mtime。默认 `true`。
+- `CACHE_TOUCH_MIN_INTERVAL`: 同一文件两次 touch 的最小间隔（支持 `s/m/h/d`）。默认 `1d`。
+- `CACHE_RETENTION_START`: 清理轮次初始保留窗口（支持 `s/m/h/d`）。默认 `10d`。
+- `CACHE_RETENTION_MIN`: 清理轮次最小保留窗口（支持 `s/m/h/d`）。默认 `1d`。
+- `CACHE_DISK_FREE_TRIGGER`: 磁盘剩余空间低于该值时触发清理（支持 `K/M/G/T`）。默认 `20G`。
+- `CACHE_DISK_FREE_TARGET`: 磁盘剩余空间恢复到该值时可停止清理（支持 `K/M/G/T`）。默认 `25G`。
+- `CACHE_MAX_SIZE`: 可选，缓存总大小触发阈值（支持 `K/M/G/T`）。默认空（禁用）。
+- `CACHE_TARGET_SIZE`: 可选，缓存总大小回落目标（支持 `K/M/G/T`）。默认空（禁用）。
 - `REPO_FALLBACK_REPOS`: 缓存未命中时的回源仓库地址列表（逗号分隔）。
 - `ENABLE_HTTPS_PROXY`: 是否启用 HTTPS 代理处理（`true/false`）。
 - `HTTPS_MITM_DOMAINS`: 需要执行 MITM 证书签发的域名列表（逗号分隔，支持通配符）。
@@ -297,6 +324,11 @@ npm start
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒）。默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站可保留的空闲连接上限。默认 `16`。
+- `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 缓存索引。默认 `true`。
+- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录。默认 `data/index`。
+- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时）。默认 `24`。
+- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: affinity 事件日志 flush 周期（秒）。默认 `5`。
+- `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。默认 `8`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
 - `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。
 - `UPSTREAM_HTTPS_PROXY_URL`: HTTPS 请求使用的上级代理地址。

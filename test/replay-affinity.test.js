@@ -156,6 +156,7 @@ function startProxyProcess(logBuffer) {
       PROXY_PORT: String(PROXY_PORT),
       REPO_PORT: String(REPO_PORT),
       CACHE_DIR: "data/cache-replay-test",
+      MAVEN_AFFINITY_INDEX_DIR: "data/cache-replay-test/.index",
       DOWNLOAD_LOG_DIR: "data/logs/replay-test",
       MAVEN_AFFINITY_ENABLED: "true",
       MAVEN_NEGATIVE_CACHE_TTL_HOURS: "24",

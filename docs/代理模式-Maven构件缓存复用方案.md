@@ -78,7 +78,7 @@
 - 请求路径上优先查内存，保证低延迟。
 
 ### 6.2 磁盘层
-- 目录：`MAVEN_AFFINITY_INDEX_DIR`（默认 `CACHE_DIR/.index`）
+- 目录：`MAVEN_AFFINITY_INDEX_DIR`（默认 `data/index`）
 - 文件：
   - `maven-affinity.snapshot.json`（快照）
   - `maven-affinity.events.log`（JSONL 事件日志）
@@ -102,7 +102,7 @@
 ## 8. 配置项
 
 - `MAVEN_AFFINITY_ENABLED`: 是否启用，默认 `true`
-- `MAVEN_AFFINITY_INDEX_DIR`: 索引目录，默认 `.index`（相对 CACHE_DIR）
+- `MAVEN_AFFINITY_INDEX_DIR`: 索引目录，默认 `data/index`（相对配置基准目录）
 - `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: 负缓存 TTL（小时），默认 `24`
 - `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: flush 周期（秒），默认 `5`
 - `MAVEN_AFFINITY_EVENT_MAX_MB`: 事件日志压缩阈值（MB），默认 `8`

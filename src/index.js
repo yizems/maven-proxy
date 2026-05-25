@@ -8,6 +8,7 @@ import { startRepoServer } from "./repo/repo-server.js";
 import { getTrustStoreCommands } from "./cert/truststore-utils.js";
 import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
 import { MavenAffinityIndex } from "./cache/maven-affinity-index.js";
+import { CacheCleanupManager } from "./cache/cache-cleanup-manager.js";
 import { installConsoleLogFileMirror, installGlobalErrorLogging } from "./common/console-log-file.js";
 
 installConsoleLogFileMirror({
@@ -85,6 +86,8 @@ async function main() {
   const upstreamProxyManager = new UpstreamProxyManager(config, matchesDomain);
   const mavenAffinityIndex = new MavenAffinityIndex(config);
   await mavenAffinityIndex.init();
+  const cacheCleanupManager = new CacheCleanupManager(config);
+  await cacheCleanupManager.init();
 
   const downloader = new Downloader(config, matchesDomain, upstreamProxyManager);
 
@@ -95,8 +98,9 @@ async function main() {
     matchesDomain,
     upstreamProxyManager,
     mavenAffinityIndex,
+    cacheCleanupManager,
   );
-  const repoServer = startRepoServer(config, downloader);
+  const repoServer = startRepoServer(config, downloader, cacheCleanupManager);
 
   await Promise.all([
     waitForServerListening(proxyServer, "proxy server"),
@@ -131,6 +135,16 @@ async function main() {
   startupInfo(`[maven-proxy] maven negative cache ttl(hours): ${config.mavenNegativeCacheTtlMs / (60 * 60 * 1000)}`);
   startupInfo(`[maven-proxy] maven affinity flush interval(seconds): ${config.mavenAffinityFlushIntervalMs / 1000}`);
   startupInfo(`[maven-proxy] maven affinity event max(MB): ${config.mavenAffinityEventMaxBytes / (1024 * 1024)}`);
+  startupInfo(`[maven-proxy] cache cleanup enabled: ${config.cacheCleanupEnabled}`);
+  startupInfo(`[maven-proxy] cache cleanup daily at: ${config.cacheCleanupDailyAt}`);
+  startupInfo(`[maven-proxy] cache touch on hit: ${config.cacheTouchOnHit}`);
+  startupInfo(`[maven-proxy] cache touch min interval: ${config.cacheTouchMinInterval}`);
+  startupInfo(`[maven-proxy] cache retention start: ${config.cacheRetentionStart}`);
+  startupInfo(`[maven-proxy] cache retention min: ${config.cacheRetentionMin}`);
+  startupInfo(`[maven-proxy] cache disk free trigger: ${config.cacheDiskFreeTrigger}`);
+  startupInfo(`[maven-proxy] cache disk free target: ${config.cacheDiskFreeTarget}`);
+  startupInfo(`[maven-proxy] cache max size: ${config.cacheMaxSize || "(disabled)"}`);
+  startupInfo(`[maven-proxy] cache target size: ${config.cacheTargetSize || "(disabled)"}`);
   startupInfo(`[maven-proxy] root cert : ${config.rootCertPath}`);
   startupInfo(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {
@@ -151,6 +165,7 @@ async function main() {
     mitmHttpServer.close();
     repoServer.close();
     upstreamProxyManager.destroy();
+    void cacheCleanupManager.destroy();
     void mavenAffinityIndex.destroy();
   };
 

@@ -101,11 +101,15 @@ function buildUrl(req, forcedProtocol = null) {
   return new URL(`${protocol}//${host}${raw}`);
 }
 
-async function serveFile(res, req, filePath) {
+async function serveFile(res, req, filePath, cacheCleanupManager = null) {
   const stats = await statIfFile(filePath);
   if (!stats) {
     sendText(res, 404, "Not Found");
     return;
+  }
+
+  if (cacheCleanupManager) {
+    cacheCleanupManager.touchFileOnHit(filePath);
   }
 
   res.setHeader("content-length", String(stats.size));
@@ -171,6 +175,7 @@ export function createHttpRequestHandler({
   upstreamProxyManager = null,
   matchesDomain,
   mavenAffinityIndex = null,
+  cacheCleanupManager = null,
 }) {
   return async function handleHttpRequestPath(req, res, forcedProtocol = null) {
     let urlObj;
@@ -210,7 +215,7 @@ export function createHttpRequestHandler({
     const existing = await statIfFile(cachePath);
     if (existing) {
       console.log(`[proxy] local cache hit host=${urlObj.hostname} path=${urlObj.pathname}`);
-      await serveFile(res, req, cachePath);
+      await serveFile(res, req, cachePath, cacheCleanupManager);
       return;
     }
 
@@ -219,7 +224,7 @@ export function createHttpRequestHandler({
         const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
         if (preferredPath) {
           console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
-          await serveFile(res, req, preferredPath);
+          await serveFile(res, req, preferredPath, cacheCleanupManager);
           return;
         }
       }
@@ -233,6 +238,9 @@ export function createHttpRequestHandler({
 
     try {
       console.log(`[proxy] local cache miss host=${urlObj.hostname} path=${urlObj.pathname}`);
+      if (cacheCleanupManager) {
+        await cacheCleanupManager.checkAndCleanupIfNeeded("cache-miss");
+      }
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
 
@@ -247,7 +255,7 @@ export function createHttpRequestHandler({
       }
 
       res.setHeader("x-cache", "MISS");
-      await serveFile(res, req, cachePath);
+      await serveFile(res, req, cachePath, cacheCleanupManager);
     } catch (error) {
       if (
         canonical &&

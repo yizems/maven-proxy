@@ -256,6 +256,17 @@ curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/
 ### 8.4 Upstream Proxy Settings
 
 Environment variables:
+- CACHE_CLEANUP_ENABLED: enable automatic cache cleanup.
+- CACHE_CLEANUP_DAILY_AT: daily cleanup check time in local timezone (HH:mm), for example 03:00.
+- CACHE_CLEANUP_CHECK_MIN_INTERVAL: minimum interval between pressure checks (supports s/m/h/d), for example 10m.
+- CACHE_TOUCH_ON_HIT: update file mtime when cache hit returns successfully.
+- CACHE_TOUCH_MIN_INTERVAL: minimum interval between two touches for the same file (supports s/m/h/d), default 1d.
+- CACHE_RETENTION_START: initial retention window for cleanup rounds (supports s/m/h/d), default 10d.
+- CACHE_RETENTION_MIN: minimum retention window for cleanup rounds (supports s/m/h/d), default 1d.
+- CACHE_DISK_FREE_TRIGGER: trigger cleanup when disk free bytes are below this value (supports K/M/G/T), for example 20G.
+- CACHE_DISK_FREE_TARGET: stop cleanup when disk free bytes recover to this value (supports K/M/G/T), for example 25G.
+- CACHE_MAX_SIZE: optional cache-size trigger threshold (supports K/M/G/T).
+- CACHE_TARGET_SIZE: optional cache-size target to stop cleanup (supports K/M/G/T).
 - UPSTREAM_PROXY_URL: generic upstream proxy URL.
 - UPSTREAM_HTTP_PROXY_URL: upstream proxy for HTTP.
 - UPSTREAM_HTTPS_PROXY_URL: upstream proxy for HTTPS.
@@ -273,6 +284,11 @@ Environment variables:
 - OUTBOUND_KEEP_ALIVE_SECONDS: keep-alive interval in seconds.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
 - OUTBOUND_MAX_FREE_SOCKETS: max idle outbound sockets per origin.
+- MAVEN_AFFINITY_ENABLED: enable Maven affinity index.
+- MAVEN_AFFINITY_INDEX_DIR: Maven affinity index directory. Default data/index.
+- MAVEN_NEGATIVE_CACHE_TTL_HOURS: negative cache TTL in hours.
+- MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS: flush interval for affinity event log in seconds.
+- MAVEN_AFFINITY_EVENT_MAX_MB: max size threshold for affinity event log compaction in MB.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
 - MAVEN_PROXY_CONFIG_FILE: explicit config file path.
 - EXISTING_TRUST_STORE_PATH: optional existing truststore path. If present, truststore init prefers it as source.
@@ -292,6 +308,17 @@ Priority:
 - `PROXY_PORT`: Proxy server port. Default `8080`.
 - `REPO_PORT`: Local repository server port. Default `8081`.
 - `CACHE_DIR`: Base cache directory. Default `data/cache`.
+- `CACHE_CLEANUP_ENABLED`: Enable automatic cache cleanup. Default `true`.
+- `CACHE_CLEANUP_DAILY_AT`: Daily cleanup check time in local timezone (`HH:mm`). Default `03:00`.
+- `CACHE_CLEANUP_CHECK_MIN_INTERVAL`: Minimum interval between pressure checks (supports `s/m/h/d`). Default `10m`.
+- `CACHE_TOUCH_ON_HIT`: Update file mtime when cache hit returns successfully. Default `true`.
+- `CACHE_TOUCH_MIN_INTERVAL`: Minimum interval between two touches for the same file (supports `s/m/h/d`). Default `1d`.
+- `CACHE_RETENTION_START`: Initial retention window for cleanup rounds (supports `s/m/h/d`). Default `10d`.
+- `CACHE_RETENTION_MIN`: Minimum retention window for cleanup rounds (supports `s/m/h/d`). Default `1d`.
+- `CACHE_DISK_FREE_TRIGGER`: Trigger cleanup when disk free bytes are below this value (supports `K/M/G/T`). Default `20G`.
+- `CACHE_DISK_FREE_TARGET`: Stop cleanup when disk free bytes recover to this value (supports `K/M/G/T`). Default `25G`.
+- `CACHE_MAX_SIZE`: Optional cache-size trigger threshold (supports `K/M/G/T`). Default empty (disabled).
+- `CACHE_TARGET_SIZE`: Optional cache-size target to stop cleanup (supports `K/M/G/T`). Default empty (disabled).
 - `REPO_FALLBACK_REPOS`: Comma-separated fallback repository URLs for cache misses.
 - `ENABLE_HTTPS_PROXY`: Enable HTTPS proxy handling (`true/false`).
 - `HTTPS_MITM_DOMAINS`: Comma-separated domains to apply MITM certificate issuance (wildcards supported).
@@ -310,6 +337,11 @@ Priority:
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: Keep-alive interval in seconds. Default `1`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.
 - `OUTBOUND_MAX_FREE_SOCKETS`: Max idle outbound sockets per origin. Default `16`.
+- `MAVEN_AFFINITY_ENABLED`: Enable Maven affinity cache index. Default `true`.
+- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity index directory. Default `data/index`.
+- `MAVEN_NEGATIVE_CACHE_TTL_HOURS`: Negative cache TTL in hours. Default `24`.
+- `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`: Flush interval for affinity event log in seconds. Default `5`.
+- `MAVEN_AFFINITY_EVENT_MAX_MB`: Max size threshold for affinity event log compaction in MB. Default `8`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
 - `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
 - `UPSTREAM_HTTPS_PROXY_URL`: Upstream proxy URL for HTTPS requests.

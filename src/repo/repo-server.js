@@ -41,7 +41,7 @@ function buildCandidateRelativePaths(relativePath) {
   return [...new Set(candidates.filter(Boolean))];
 }
 
-async function ensureFromRemoteRepos(config, downloader, filePath, relativePath) {
+async function ensureFromRemoteRepos(config, downloader, filePath, relativePath, cacheCleanupManager = null) {
   if (!downloader) {
     return null;
   }
@@ -60,6 +60,9 @@ async function ensureFromRemoteRepos(config, downloader, filePath, relativePath)
       const remoteUrl = buildRemoteUrl(repoBase, candidatePath);
 
       try {
+        if (cacheCleanupManager) {
+          await cacheCleanupManager.checkAndCleanupIfNeeded("repo-cache-miss");
+        }
         console.log(`[repo] cache miss, try remote ${remoteUrl.href}`);
         await downloader.ensureCached(remoteUrl, filePath, {});
         return await statIfExists(filePath);
@@ -79,7 +82,7 @@ async function ensureFromRemoteRepos(config, downloader, filePath, relativePath)
   return null;
 }
 
-export function startRepoServer(config, downloader = null) {
+export function startRepoServer(config, downloader = null, cacheCleanupManager = null) {
   const server = http.createServer(async (req, res) => {
     try {
       const urlObj = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
@@ -88,7 +91,7 @@ export function startRepoServer(config, downloader = null) {
       let stats = await statIfExists(filePath);
 
       if (!stats || !stats.isFile()) {
-        stats = await ensureFromRemoteRepos(config, downloader, filePath, relativePath);
+        stats = await ensureFromRemoteRepos(config, downloader, filePath, relativePath, cacheCleanupManager);
       }
 
       if (!stats || !stats.isFile()) {
@@ -99,6 +102,10 @@ export function startRepoServer(config, downloader = null) {
 
       res.setHeader("content-length", String(stats.size));
       res.setHeader("cache-control", "public, max-age=3600");
+
+      if (cacheCleanupManager) {
+        cacheCleanupManager.touchFileOnHit(filePath);
+      }
 
       if (req.method === "HEAD") {
         res.writeHead(200);

@@ -19,6 +19,7 @@ export function startProxyServer(
   matchesDomain,
   upstreamProxyManager = null,
   mavenAffinityIndex = null,
+  cacheCleanupManager = null,
 ) {
   const handleHttpRequestPath = createHttpRequestHandler({
     config,
@@ -26,6 +27,7 @@ export function startProxyServer(
     upstreamProxyManager,
     matchesDomain,
     mavenAffinityIndex,
+    cacheCleanupManager,
   });
   const mitmHttpServer = createMitmHttpServer(handleHttpRequestPath);
 
