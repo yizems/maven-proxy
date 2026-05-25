@@ -1,6 +1,6 @@
 {
   "name": "maven-proxy",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Maven proxy with cache, HTTPS MITM for selected domains, and local repo publishing",
   "main": "src/index.js",
   "bin": {
