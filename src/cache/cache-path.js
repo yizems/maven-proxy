@@ -12,6 +12,54 @@ function safeDecode(pathname) {
   }
 }
 
+function looksLikeMavenVersionSegment(segment) {
+  return /^\d[0-9A-Za-z._-]*$/.test(String(segment || ""));
+}
+
+function isLikelyMavenFilePath(parts, normalizedPath) {
+  if (normalizedPath.endsWith("/") || parts.length === 0) {
+    return false;
+  }
+
+  const last = String(parts[parts.length - 1] || "").toLowerCase();
+  if (!last) {
+    return false;
+  }
+
+  if (last.startsWith("maven-metadata.")) {
+    return true;
+  }
+
+  const knownSuffixes = [
+    ".pom",
+    ".jar",
+    ".aar",
+    ".war",
+    ".zip",
+    ".module",
+    ".xml",
+    ".sha1",
+    ".md5",
+    ".sha256",
+    ".sha512",
+    ".asc",
+    ".json",
+    ".toml",
+    ".klib",
+  ];
+
+  if (knownSuffixes.some((suffix) => last.endsWith(suffix))) {
+    return true;
+  }
+
+  const secondLast = String(parts[parts.length - 2] || "").toLowerCase();
+  if (looksLikeMavenVersionSegment(secondLast)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function getCacheFilePath(cacheDir, urlObj, options = {}) {
   const ecosystem = sanitizeSegment(String(options.ecosystem || "generic").toLowerCase());
   const includeHost = options.includeHost ?? ecosystem !== "maven";
@@ -33,6 +81,10 @@ export function getCacheFilePath(cacheDir, urlObj, options = {}) {
 
   if (includeHost) {
     safeParts.unshift(sanitizeSegment(String(urlObj.hostname || "unknown").toLowerCase()));
+  }
+
+  if (ecosystem === "maven" && !isLikelyMavenFilePath(parts, normalized)) {
+    safeParts.push("__dir__.json");
   }
 
   const npmTarballPath = /\/-\/.+\.tgz$/i.test(lowerNormalized);

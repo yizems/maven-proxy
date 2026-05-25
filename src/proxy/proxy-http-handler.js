@@ -5,6 +5,32 @@ import path from "node:path";
 import { getCacheFilePath } from "../cache/cache-path.js";
 import { detectPackageEcosystem } from "../common/ecosystem.js";
 
+const LOCAL_FS_ERROR_CODES = new Set([
+  "EACCES",
+  "EPERM",
+  "ENOSPC",
+  "EROFS",
+  "ENOTDIR",
+  "EISDIR",
+  "EINVAL",
+  "EMFILE",
+  "ENFILE",
+  "EEXIST",
+]);
+
+function isLocalFsWriteError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  if (LOCAL_FS_ERROR_CODES.has(error.code)) {
+    return true;
+  }
+
+  const message = String(error.message || "").toLowerCase();
+  return message.includes("enotdir") || message.includes("read-only file system");
+}
+
 function pickClient(protocol) {
   return protocol === "https:" ? https : http;
 }
@@ -166,8 +192,25 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
       res.setHeader("x-cache", "MISS");
       await serveFile(res, req, cachePath);
     } catch (error) {
+      if (isLocalFsWriteError(error)) {
+        if (!error.statusCode) {
+          error.statusCode = 500;
+        }
+
+        if (typeof downloader?.logDownload === "function") {
+          downloader.logDownload("local cache write failed", urlObj, {
+            code: error.code || "UNKNOWN",
+            cachePath,
+            message: error.message,
+          });
+        }
+
+        console.error(`[proxy] local cache write failed cachePath=${cachePath} code=${error.code || "UNKNOWN"} message=${error.message}`);
+      }
+
       const statusCode = error.statusCode || 502;
-      sendText(res, statusCode, `Download failed: ${error.message}`);
+      const label = statusCode === 500 ? "Local cache write failed" : "Download failed";
+      sendText(res, statusCode, `${label}: ${error.message}`);
     }
   };
 }

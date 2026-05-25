@@ -7,6 +7,31 @@ import { DownloadLogWriter } from "../common/download-log-writer.js";
 
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
+const LOCAL_FS_ERROR_CODES = new Set([
+  "EACCES",
+  "EPERM",
+  "ENOSPC",
+  "EROFS",
+  "ENOTDIR",
+  "EISDIR",
+  "EINVAL",
+  "EMFILE",
+  "ENFILE",
+  "EEXIST",
+]);
+
+function isLocalFsWriteError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  if (LOCAL_FS_ERROR_CODES.has(error.code)) {
+    return true;
+  }
+
+  const message = String(error.message || "").toLowerCase();
+  return message.includes("enotdir") || message.includes("read-only file system");
+}
 
 function pickClient(protocol) {
   return protocol === "https:" ? https : http;
@@ -343,6 +368,19 @@ export class Downloader {
       await verifyFileSize(tempPath, metadata.contentLength);
       await fs.promises.rename(tempPath, finalPath);
     } catch (error) {
+      if (isLocalFsWriteError(error)) {
+        if (!error.statusCode) {
+          error.statusCode = 500;
+        }
+
+        this.logDownload("local cache write failed", urlObj, {
+          code: error.code || "UNKNOWN",
+          targetPath: finalPath,
+          tempPath,
+          message: error.message,
+        });
+      }
+
       await removeIfExists(tempPath);
       throw error;
     }
