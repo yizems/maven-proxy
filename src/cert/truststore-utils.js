@@ -40,6 +40,19 @@ function runCommandCapture(command, args) {
   return result.stdout || "";
 }
 
+function runCommandBestEffort(command, args) {
+  const result = spawnSync(command, args, {
+    shell: false,
+    encoding: "utf8",
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  return result.status === 0;
+}
+
 export function assertKeytoolAvailable() {
   const result = spawnSync("keytool", ["-help"], {
     shell: false,
@@ -58,6 +71,70 @@ export function assertKeytoolAvailable() {
 
 function getDefaultCacertsPath(javaHome) {
   return path.join(javaHome, "lib", "security", "cacerts");
+}
+
+function getExistingStoreSource(runtimeConfig) {
+  const sourcePath = String(runtimeConfig.existingTrustStorePath || "").trim();
+  if (!sourcePath) {
+    return null;
+  }
+
+  if (!fs.existsSync(sourcePath)) {
+    return null;
+  }
+
+  const stats = fs.statSync(sourcePath);
+  if (!stats.isFile()) {
+    throw new Error(`Configured existing truststore is not a file: ${sourcePath}`);
+  }
+
+  return {
+    sourcePath,
+    sourcePassword: runtimeConfig.existingTrustStorePassword || runtimeConfig.trustStorePassword,
+    sourceLabel: "existing truststore",
+  };
+}
+
+function getJdkStoreSource(runtimeConfig) {
+  if (!runtimeConfig || !runtimeConfig.javaHome) {
+    throw new Error("JAVA_HOME is required when existing truststore is not available.");
+  }
+
+  const sourcePath = getDefaultCacertsPath(runtimeConfig.javaHome);
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`JDK cacerts not found: ${sourcePath}`);
+  }
+
+  return {
+    sourcePath,
+    sourcePassword: "changeit",
+    sourceLabel: "jdk cacerts",
+  };
+}
+
+function syncStoreToTarget(sourcePath, targetPath) {
+  const samePath = path.resolve(sourcePath) === path.resolve(targetPath);
+  if (samePath) {
+    return;
+  }
+
+  fs.copyFileSync(sourcePath, targetPath);
+}
+
+function ensureTargetStorePassword(targetPath, currentPassword, desiredPassword) {
+  if (currentPassword === desiredPassword) {
+    return;
+  }
+
+  runCommand("keytool", [
+    "-storepasswd",
+    "-new",
+    desiredPassword,
+    "-keystore",
+    targetPath,
+    "-storepass",
+    currentPassword,
+  ]);
 }
 
 function parseAliasesFromListOutput(output) {
@@ -81,16 +158,20 @@ function parseAliasesFromListOutput(output) {
 }
 
 function listTrustStoreAliases({ storePath, storePass, storeType }) {
-  const output = runCommandCapture("keytool", [
+  const args = [
     "-list",
     "-v",
     "-keystore",
     storePath,
     "-storepass",
     storePass,
-    "-storetype",
-    storeType,
-  ]);
+  ];
+
+  if (storeType) {
+    args.push("-storetype", storeType);
+  }
+
+  const output = runCommandCapture("keytool", args);
 
   return parseAliasesFromListOutput(output);
 }
@@ -160,9 +241,13 @@ export function getTrustStoreCommands(runtimeConfig) {
     ? `${javaHome}\\lib\\security\\cacerts`
     : `${javaHome}/lib/security/cacerts`;
 
+  const existingStore = String(runtimeConfig.existingTrustStorePath || "").trim();
+  const copySource = existingStore && fs.existsSync(existingStore)
+    ? existingStore
+    : defaultCacerts;
   const copyCmd = isWindows
-    ? `Copy-Item "${defaultCacerts}" "${runtimeConfig.trustStorePath}"`
-    : `cp "${defaultCacerts}" "${runtimeConfig.trustStorePath}"`;
+    ? `Copy-Item "${copySource}" "${runtimeConfig.trustStorePath}"`
+    : `cp "${copySource}" "${runtimeConfig.trustStorePath}"`;
 
   const importCmd = `keytool -importcert -noprompt -trustcacerts -alias "${runtimeConfig.trustStoreAlias}" -file "${runtimeConfig.rootCertPath}" -keystore "${runtimeConfig.trustStorePath}" -storepass "${runtimeConfig.trustStorePassword}"`;
   const listCmd = `keytool -list -v -keystore "${runtimeConfig.trustStorePath}" -storepass "${runtimeConfig.trustStorePassword}" -alias "${runtimeConfig.trustStoreAlias}"`;
@@ -173,25 +258,34 @@ export function getTrustStoreCommands(runtimeConfig) {
 export function initTrustStore(runtimeConfig) {
   assertKeytoolAvailable();
 
-  if (!runtimeConfig || !runtimeConfig.javaHome) {
-    throw new Error("JAVA_HOME is required to initialize trust store.");
-  }
-
-  const defaultCacerts = getDefaultCacertsPath(runtimeConfig.javaHome);
-
-  if (!fs.existsSync(defaultCacerts)) {
-    throw new Error(`JDK cacerts not found: ${defaultCacerts}`);
-  }
-
   if (!fs.existsSync(runtimeConfig.rootCertPath)) {
     throw new Error(`Root certificate not found: ${runtimeConfig.rootCertPath}`);
   }
 
   fs.mkdirSync(path.dirname(runtimeConfig.trustStorePath), { recursive: true });
 
-  if (!fs.existsSync(runtimeConfig.trustStorePath)) {
-    fs.copyFileSync(defaultCacerts, runtimeConfig.trustStorePath);
-  }
+  const existingSource = getExistingStoreSource(runtimeConfig);
+  const source = existingSource || getJdkStoreSource(runtimeConfig);
+
+  syncStoreToTarget(source.sourcePath, runtimeConfig.trustStorePath);
+  ensureTargetStorePassword(
+    runtimeConfig.trustStorePath,
+    source.sourcePassword,
+    runtimeConfig.trustStorePassword,
+  );
+
+  console.log(`[truststore] source: ${source.sourceLabel} (${source.sourcePath})`);
+  console.log(`[truststore] output: ${runtimeConfig.trustStorePath}`);
+
+  runCommandBestEffort("keytool", [
+    "-delete",
+    "-alias",
+    runtimeConfig.trustStoreAlias,
+    "-keystore",
+    runtimeConfig.trustStorePath,
+    "-storepass",
+    runtimeConfig.trustStorePassword,
+  ]);
 
   runCommand("keytool", [
     "-importcert",

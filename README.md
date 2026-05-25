@@ -269,6 +269,8 @@ Environment variables:
 - LOG_RETENTION_DAYS: number of days to retain logs.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
 - MAVEN_PROXY_CONFIG_FILE: explicit config file path.
+- EXISTING_TRUST_STORE_PATH: optional existing truststore path. If present, truststore init prefers it as source.
+- EXISTING_TRUST_STORE_PASSWORD: optional password for the existing truststore source.
 
 Rules:
 - UPSTREAM_NO_PROXY and UPSTREAM_IGNORE_DOMAINS are merged.
@@ -308,6 +310,8 @@ Priority:
 - `TRUST_STORE_PATH`: Path to Java trust store file.
 - `TRUST_STORE_ALIAS`: Alias used when importing Root CA into trust store.
 - `TRUST_STORE_PASSWORD`: Trust store password.
+- `EXISTING_TRUST_STORE_PATH`: Optional existing truststore path. If present, init prefers it as source and writes output to `TRUST_STORE_PATH`.
+- `EXISTING_TRUST_STORE_PASSWORD`: Optional password used to read `EXISTING_TRUST_STORE_PATH`.
 - `JAVA_HOME`: Preferred Java home path. If empty or invalid, auto-detection is used.
 - `MAVEN_PROXY_CONFIG_MODE`: Config load mode (`development` or `user`).
 - `MAVEN_PROXY_CONFIG_FILE`: Explicit config file path override.
@@ -315,6 +319,12 @@ Priority:
 ### 8.5 Trust Store Merge
 
 Use merge command to combine trust stores.
+
+`truststore init` behavior:
+
+- If `EXISTING_TRUST_STORE_PATH` exists: it is used as source, copied to `TRUST_STORE_PATH`, then Root CA is imported.
+- If it does not exist: fallback source is `${JAVA_HOME}/lib/security/cacerts`, then output is written to `TRUST_STORE_PATH` and Root CA is imported.
+- If source truststore password differs from `TRUST_STORE_PASSWORD`, init rotates output store password to `TRUST_STORE_PASSWORD`.
 
 Help:
 

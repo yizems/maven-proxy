@@ -254,6 +254,8 @@ npm start
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
 - `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
+- `EXISTING_TRUST_STORE_PATH`: 已有 truststore 路径（可选）。若文件存在，`truststore init` 会优先以它作为源。
+- `EXISTING_TRUST_STORE_PASSWORD`: 已有 truststore 密码（可选）。当使用已有 truststore 作为源时生效。
 
 说明：
 
@@ -295,6 +297,8 @@ npm start
 - `TRUST_STORE_PATH`: Java trust store 文件路径。
 - `TRUST_STORE_ALIAS`: 导入 Root CA 到 trust store 时使用的别名。
 - `TRUST_STORE_PASSWORD`: trust store 密码。
+- `EXISTING_TRUST_STORE_PATH`: 现有 truststore 路径（可选）。若存在，初始化时优先使用该文件作为源，并输出到 `TRUST_STORE_PATH`。
+- `EXISTING_TRUST_STORE_PASSWORD`: 现有 truststore 密码（可选）。用于读取 `EXISTING_TRUST_STORE_PATH`。
 - `JAVA_HOME`: Java 安装路径。为空或无效时会自动探测。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置加载模式（`development` 或 `user`）。
 - `MAVEN_PROXY_CONFIG_FILE`: 显式指定配置文件路径（优先级最高）。
@@ -330,6 +334,12 @@ curl.exe -k -sS -D - -o NUL -x http://127.0.0.1:8080 https://registry.npmjs.org/
 ### 8.5 Trust Store 合并（merge）
 
 当你已经有两个 trust store（例如一个团队公共 trust store + 一个项目专用 trust store）时，可使用 `merge` 子命令合并。
+
+`truststore init` 初始化逻辑：
+
+- 若 `EXISTING_TRUST_STORE_PATH` 指向的文件存在：先以该文件作为源，输出到 `TRUST_STORE_PATH`，再导入 Root CA。
+- 若上述文件不存在：回退到 `${JAVA_HOME}/lib/security/cacerts` 作为源，再输出到 `TRUST_STORE_PATH` 并导入 Root CA。
+- 若源 truststore 密码与 `TRUST_STORE_PASSWORD` 不一致，初始化过程中会将输出文件密码转换为 `TRUST_STORE_PASSWORD`。
 
 1. 查看帮助（脚本会输出参数错误）：
 

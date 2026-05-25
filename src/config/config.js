@@ -135,6 +135,15 @@ function normalizeProxyUrl(value) {
   return `http://${trimmed}`;
 }
 
+function resolveOptionalPath(baseDir, value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  return path.isAbsolute(raw) ? raw : path.resolve(baseDir, raw);
+}
+
 function extractHostsFromUrls(urls) {
   const hosts = [];
 
@@ -200,6 +209,8 @@ export const config = {
   trustStorePath: path.resolve(configBaseDir, process.env.TRUST_STORE_PATH || "data/certs/proxy-truststore.jks"),
   trustStoreAlias: process.env.TRUST_STORE_ALIAS || "maven-proxy-root-ca",
   trustStorePassword: process.env.TRUST_STORE_PASSWORD || "changeit",
+  existingTrustStorePath: resolveOptionalPath(configBaseDir, process.env.EXISTING_TRUST_STORE_PATH || ""),
+  existingTrustStorePassword: process.env.EXISTING_TRUST_STORE_PASSWORD || "",
   javaHome: javaHomeResolution.javaHome,
   javaHomeSource: javaHomeResolution.source,
   javaHomeConfigured: javaHomeResolution.configuredJavaHome || "",

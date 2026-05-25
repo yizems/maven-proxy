@@ -164,6 +164,8 @@ function getDefaultConfigTemplate() {
     "TRUST_STORE_PATH=data/certs/proxy-truststore.jks",
     "TRUST_STORE_ALIAS=maven-proxy-root-ca",
     "TRUST_STORE_PASSWORD=changeit",
+    "EXISTING_TRUST_STORE_PATH=",
+    "EXISTING_TRUST_STORE_PASSWORD=",
     "JAVA_HOME=",
     "",
   ].join("\n");
@@ -363,6 +365,16 @@ async function runDoctor(options) {
   } else {
     warnings.push("trust store missing");
     printDoctorLine("WARN", "trust store", `not found: ${config.trustStorePath}`);
+  }
+
+  if (config.existingTrustStorePath) {
+    const existingTrustStore = checkPathExists(config.existingTrustStorePath);
+    if (existingTrustStore.ok && existingTrustStore.isFile) {
+      printDoctorLine("PASS", "existing trust store source", config.existingTrustStorePath);
+    } else {
+      warnings.push("existing trust store source missing");
+      printDoctorLine("WARN", "existing trust store source", `not found: ${config.existingTrustStorePath}`);
+    }
   }
 
   const dirs = [
