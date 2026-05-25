@@ -118,7 +118,13 @@ export class UpstreamProxyManager {
 
     const cacheKey = `${proxyUrl}`;
     if (!this.agentCache.has(cacheKey)) {
-      this.agentCache.set(cacheKey, new ProxyAgent(proxyUrl));
+      // proxy-agent v6 expects resolver-style options for deterministic proxy routing.
+      this.agentCache.set(
+        cacheKey,
+        new ProxyAgent({
+          getProxyForUrl: () => proxyUrl,
+        }),
+      );
     }
 
     return this.agentCache.get(cacheKey);

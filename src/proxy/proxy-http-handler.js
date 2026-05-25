@@ -74,6 +74,11 @@ function sendText(res, statusCode, message) {
   res.end(message);
 }
 
+function sendErrorText(res, statusCode, message, context = "proxy") {
+  console.error(`[${context}] response error status=${statusCode} message=${message}`);
+  sendText(res, statusCode, message);
+}
+
 function buildUrl(req, forcedProtocol = null) {
   const raw = req.url || "/";
   if (/^https?:\/\//i.test(raw)) {
@@ -143,7 +148,8 @@ function forwardDirectRequest(req, res, urlObj, timeoutMs, upstreamProxyManager 
 
   upstreamReq.on("error", (error) => {
     if (!res.headersSent) {
-      sendText(res, 502, `Proxy forward failed: ${error.message}`);
+      const message = `Proxy forward failed: ${error.message}`;
+      sendErrorText(res, 502, message, "proxy");
     } else {
       res.destroy(error);
     }
@@ -158,7 +164,8 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
     try {
       urlObj = buildUrl(req, forcedProtocol);
     } catch (error) {
-      sendText(res, 400, `Bad request: ${error.message}`);
+      const message = `Bad request: ${error.message}`;
+      sendErrorText(res, 400, message, "proxy");
       return;
     }
 
@@ -176,7 +183,8 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
         includeHost: ecosystem !== "maven",
       });
     } catch (error) {
-      sendText(res, 400, `Invalid cache path: ${error.message}`);
+      const message = `Invalid cache path: ${error.message}`;
+      sendErrorText(res, 400, message, "proxy");
       return;
     }
 
@@ -210,7 +218,8 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
 
       const statusCode = error.statusCode || 502;
       const label = statusCode === 500 ? "Local cache write failed" : "Download failed";
-      sendText(res, statusCode, `${label}: ${error.message}`);
+      const message = `${label}: ${error.message}`;
+      sendErrorText(res, statusCode, message, "proxy");
     }
   };
 }
@@ -218,7 +227,8 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
 export function createMitmHttpServer(handleHttpRequestPath) {
   const server = http.createServer((req, res) => {
     handleHttpRequestPath(req, res, "https:").catch((error) => {
-      sendText(res, 500, `MITM request failed: ${error.message}`);
+      const message = `MITM request failed: ${error.message}`;
+      sendErrorText(res, 500, message, "proxy-mitm");
     });
   });
 

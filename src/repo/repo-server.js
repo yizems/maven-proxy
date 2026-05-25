@@ -110,8 +110,10 @@ export function startRepoServer(config, downloader = null) {
       fs.createReadStream(filePath).pipe(res);
     } catch (error) {
       const statusCode = error.statusCode && error.statusCode >= 400 ? 502 : 500;
+      const message = `Repo server error: ${error.message}`;
+      console.error(`[repo] response error status=${statusCode} message=${message}`);
       res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
-      res.end(`Repo server error: ${error.message}`);
+      res.end(message);
     }
   });
 

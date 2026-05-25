@@ -7,6 +7,11 @@ function sendText(res, statusCode, message) {
   res.end(message);
 }
 
+function sendErrorText(res, statusCode, message) {
+  console.error(`[proxy] response error status=${statusCode} message=${message}`);
+  sendText(res, statusCode, message);
+}
+
 export function startProxyServer(config, certManager, downloader, matchesDomain, upstreamProxyManager = null) {
   const handleHttpRequestPath = createHttpRequestHandler({
     config,
@@ -18,7 +23,8 @@ export function startProxyServer(config, certManager, downloader, matchesDomain,
 
   const server = http.createServer((req, res) => {
     handleHttpRequestPath(req, res, null).catch((error) => {
-      sendText(res, 500, `Proxy request failed: ${error.message}`);
+      const message = `Proxy request failed: ${error.message}`;
+      sendErrorText(res, 500, message);
     });
   });
 

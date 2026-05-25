@@ -261,6 +261,27 @@ async function removeIfExists(filePath) {
   }
 }
 
+function toHost(urlObj) {
+  if (!urlObj || typeof urlObj !== "object") {
+    return "";
+  }
+
+  return String(urlObj.hostname || "");
+}
+
+function toBodyPreview(value, maxLength = 512) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) {
+    return "";
+  }
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength)}...(truncated)`;
+}
+
 export class Downloader {
   constructor(config, domainMatcher, upstreamProxyManager = null) {
     this.config = config;
@@ -380,6 +401,16 @@ export class Downloader {
           message: error.message,
         });
       }
+
+      this.logDownload("download failed", urlObj, {
+        host: toHost(urlObj),
+        code: error.code || "UNKNOWN",
+        statusCode: error.statusCode || 0,
+        targetPath: finalPath,
+        tempPath,
+        message: error.message,
+        upstreamBodyPreview: toBodyPreview(error.upstreamBody),
+      });
 
       await removeIfExists(tempPath);
       throw error;

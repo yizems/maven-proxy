@@ -44,7 +44,8 @@ function resolveEffectiveMode(options) {
     return forced;
   }
 
-  return isProjectWorkspace(process.cwd()) ? "development" : "user";
+  // CLI defaults to user mode to load ~/maven-proxy/config unless explicitly overridden.
+  return "user";
 }
 
 function printHelp() {
@@ -213,9 +214,7 @@ async function startServer(options) {
 }
 
 function applyConfigOverrides(options) {
-  if (options.mode) {
-    process.env.MAVEN_PROXY_CONFIG_MODE = options.mode;
-  }
+  process.env.MAVEN_PROXY_CONFIG_MODE = resolveEffectiveMode(options);
 
   if (options.configPath) {
     process.env.MAVEN_PROXY_CONFIG_FILE = resolvePath(options.configPath);
