@@ -70,12 +70,14 @@ async function main() {
   console.log(`[maven-proxy] log retention days: ${config.logRetentionDays}`);
   console.log(`[maven-proxy] log to stdout: ${config.logToStdout}`);
   console.log(`[maven-proxy] outbound keep-alive: ${config.outboundKeepAlive}`);
-  console.log(`[maven-proxy] outbound keepAliveMsecs: ${config.outboundKeepAliveMsecs}`);
+  console.log(`[maven-proxy] outbound keepAlive(seconds): ${config.outboundKeepAliveMsecs / 1000}`);
   console.log(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);
   console.log(`[maven-proxy] outbound maxFreeSockets: ${config.outboundMaxFreeSockets}`);
   console.log(`[maven-proxy] maven affinity enabled: ${config.mavenAffinityEnabled}`);
   console.log(`[maven-proxy] maven affinity index dir: ${config.mavenAffinityIndexDir}`);
-  console.log(`[maven-proxy] maven negative cache ttl(ms): ${config.mavenNegativeCacheTtlMs}`);
+  console.log(`[maven-proxy] maven negative cache ttl(hours): ${config.mavenNegativeCacheTtlMs / (60 * 60 * 1000)}`);
+  console.log(`[maven-proxy] maven affinity flush interval(seconds): ${config.mavenAffinityFlushIntervalMs / 1000}`);
+  console.log(`[maven-proxy] maven affinity event max(MB): ${config.mavenAffinityEventMaxBytes / (1024 * 1024)}`);
   console.log(`[maven-proxy] root cert : ${config.rootCertPath}`);
   console.log(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {

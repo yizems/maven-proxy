@@ -269,7 +269,7 @@ Environment variables:
 - LOG_RETENTION_DAYS: number of days to retain logs.
 - LOG_TO_STDOUT: whether to also print logs to stdout/stderr.
 - OUTBOUND_KEEP_ALIVE: enable outbound keep-alive connection pooling.
-- OUTBOUND_KEEP_ALIVE_MSECS: keep-alive interval in milliseconds.
+- OUTBOUND_KEEP_ALIVE_SECONDS: keep-alive interval in seconds.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
 - OUTBOUND_MAX_FREE_SOCKETS: max idle outbound sockets per origin.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
@@ -299,13 +299,13 @@ Priority:
 - `MAVEN_REPO_DOMAINS`: Domains treated as Maven ecosystem for cache routing (wildcards supported).
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
-- `MULTI_THREAD_MIN_SIZE_BYTES`: Minimum size threshold to trigger multi-thread download.
-- `DOWNLOAD_TIMEOUT_MS`: Upstream request timeout in milliseconds.
+- `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (MB).
+- `DOWNLOAD_TIMEOUT_SECONDS`: Upstream request timeout in seconds.
 - `DOWNLOAD_LOG_DIR`: Directory for unified app/error logs.
 - `LOG_RETENTION_DAYS`: Number of days to keep log files.
 - `LOG_TO_STDOUT`: Whether to also print logs to stdout/stderr. Default `true`.
 - `OUTBOUND_KEEP_ALIVE`: Enable outbound keep-alive connection pooling. Default `true`.
-- `OUTBOUND_KEEP_ALIVE_MSECS`: Keep-alive interval in milliseconds. Default `1000`.
+- `OUTBOUND_KEEP_ALIVE_SECONDS`: Keep-alive interval in seconds. Default `1`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.
 - `OUTBOUND_MAX_FREE_SOCKETS`: Max idle outbound sockets per origin. Default `16`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).

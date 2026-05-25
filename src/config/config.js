@@ -181,6 +181,13 @@ const defaultMavenRepoDomains = [
 
 const cacheDir = path.resolve(configBaseDir, process.env.CACHE_DIR || "data/cache");
 
+const multiThreadMinSizeBytes = Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_MB, 1)) * 1024 * 1024;
+const downloadTimeoutMs = Math.max(1, toInt(process.env.DOWNLOAD_TIMEOUT_SECONDS, 60)) * 1000;
+const outboundKeepAliveMsecs = Math.max(1, toInt(process.env.OUTBOUND_KEEP_ALIVE_SECONDS, 1)) * 1000;
+const mavenNegativeCacheTtlMs = Math.max(1, toInt(process.env.MAVEN_NEGATIVE_CACHE_TTL_HOURS, 24)) * 60 * 60 * 1000;
+const mavenAffinityFlushIntervalMs = Math.max(1, toInt(process.env.MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS, 5)) * 1000;
+const mavenAffinityEventMaxBytes = Math.max(1, toInt(process.env.MAVEN_AFFINITY_EVENT_MAX_MB, 8)) * 1024 * 1024;
+
 export const config = {
   configMode,
   configBaseDir,
@@ -198,17 +205,17 @@ export const config = {
   mavenRepoDomains: toList(process.env.MAVEN_REPO_DOMAINS, [...new Set(defaultMavenRepoDomains)]),
   multiThreadDomains: toList(process.env.MULTI_THREAD_DOMAINS, ["repo1.maven.org"]),
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
-  multiThreadMinSizeBytes: Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_BYTES, 1024 * 1024)),
-  downloadTimeoutMs: Math.max(1000, toInt(process.env.DOWNLOAD_TIMEOUT_MS, 60000)),
+  multiThreadMinSizeBytes,
+  downloadTimeoutMs,
   outboundKeepAlive: toBool(process.env.OUTBOUND_KEEP_ALIVE, true),
-  outboundKeepAliveMsecs: Math.max(1, toInt(process.env.OUTBOUND_KEEP_ALIVE_MSECS, 1000)),
+  outboundKeepAliveMsecs,
   outboundMaxSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_SOCKETS, 64)),
   outboundMaxFreeSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_FREE_SOCKETS, 16)),
   mavenAffinityEnabled: toBool(process.env.MAVEN_AFFINITY_ENABLED, true),
   mavenAffinityIndexDir: path.resolve(cacheDir, process.env.MAVEN_AFFINITY_INDEX_DIR || ".index"),
-  mavenNegativeCacheTtlMs: Math.max(1000, toInt(process.env.MAVEN_NEGATIVE_CACHE_TTL_MS, 24 * 60 * 60 * 1000)),
-  mavenAffinityFlushIntervalMs: Math.max(1000, toInt(process.env.MAVEN_AFFINITY_FLUSH_INTERVAL_MS, 5000)),
-  mavenAffinityEventMaxBytes: Math.max(64 * 1024, toInt(process.env.MAVEN_AFFINITY_EVENT_MAX_BYTES, 8 * 1024 * 1024)),
+  mavenNegativeCacheTtlMs,
+  mavenAffinityFlushIntervalMs,
+  mavenAffinityEventMaxBytes,
   downloadLogDir: path.resolve(configBaseDir, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
   logRetentionDays: Math.max(1, toInt(process.env.LOG_RETENTION_DAYS, 7)),
   logToStdout: toBool(process.env.LOG_TO_STDOUT, true),

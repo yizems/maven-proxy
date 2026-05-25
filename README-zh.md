@@ -254,7 +254,7 @@ npm start
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
 - `LOG_TO_STDOUT`: 是否同时输出日志到命令行，默认 `true`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池，默认 `true`。
-- `OUTBOUND_KEEP_ALIVE_MSECS`: keep-alive 间隔（毫秒），默认 `1000`。
+- `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒），默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站保留的空闲连接上限，默认 `16`。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
@@ -286,13 +286,13 @@ npm start
 - `MAVEN_REPO_DOMAINS`: 识别为 Maven 生态并分流缓存的域名列表（支持通配符）。
 - `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。
 - `MULTI_THREAD_COUNT`: 多线程下载线程数。
-- `MULTI_THREAD_MIN_SIZE_BYTES`: 触发多线程下载的最小文件大小阈值（字节）。
-- `DOWNLOAD_TIMEOUT_MS`: 上游请求超时时间（毫秒）。
+- `MULTI_THREAD_MIN_SIZE_MB`: 触发多线程下载的最小文件大小阈值（MB）。
+- `DOWNLOAD_TIMEOUT_SECONDS`: 上游请求超时时间（秒）。
 - `DOWNLOAD_LOG_DIR`: 统一主日志与错误日志目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数。
 - `LOG_TO_STDOUT`: 是否输出日志到命令行。默认 `true`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池。默认 `true`。
-- `OUTBOUND_KEEP_ALIVE_MSECS`: keep-alive 间隔（毫秒）。默认 `1000`。
+- `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒）。默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站可保留的空闲连接上限。默认 `16`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。

@@ -158,7 +158,7 @@ function startProxyProcess(logBuffer) {
       CACHE_DIR: "data/cache-replay-test",
       DOWNLOAD_LOG_DIR: "data/logs/replay-test",
       MAVEN_AFFINITY_ENABLED: "true",
-      MAVEN_NEGATIVE_CACHE_TTL_MS: "86400000",
+      MAVEN_NEGATIVE_CACHE_TTL_HOURS: "24",
       UPSTREAM_PROXY_URL: "",
       UPSTREAM_HTTP_PROXY_URL: "",
       UPSTREAM_HTTPS_PROXY_URL: "",
