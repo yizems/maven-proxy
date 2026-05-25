@@ -259,12 +259,12 @@ Environment variables:
 - UPSTREAM_PROXY_URL: generic upstream proxy URL.
 - UPSTREAM_HTTP_PROXY_URL: upstream proxy for HTTP.
 - UPSTREAM_HTTPS_PROXY_URL: upstream proxy for HTTPS.
-- UPSTREAM_NO_PROXY: domains that bypass upstream proxy.
+- UPSTREAM_NO_PROXY: domains that bypass upstream proxy (wildcards supported, `*` means bypass all).
 - UPSTREAM_IGNORE_DOMAINS: ignored domains, wildcard supported.
 - REPO_FALLBACK_REPOS: repository fallback list.
-- NPM_REGISTRY_DOMAINS: npm domains for ecosystem routing.
-- MAVEN_REPO_DOMAINS: maven domains for ecosystem routing.
-- HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default).
+- NPM_REGISTRY_DOMAINS: npm domains for ecosystem routing (wildcards supported).
+- MAVEN_REPO_DOMAINS: maven domains for ecosystem routing (wildcards supported).
+- HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION_DAYS: number of days to retain logs.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
@@ -272,11 +272,45 @@ Environment variables:
 
 Rules:
 - UPSTREAM_NO_PROXY and UPSTREAM_IGNORE_DOMAINS are merged.
+- In the current implementation, both lists share equivalent matching behavior. Prefer UPSTREAM_NO_PROXY for standard no-proxy settings and UPSTREAM_IGNORE_DOMAINS for project-specific exclusions.
 - Exact and wildcard domains are supported.
 
 Priority:
 1. HTTP: UPSTREAM_HTTP_PROXY_URL, then UPSTREAM_PROXY_URL.
 2. HTTPS: UPSTREAM_HTTPS_PROXY_URL, then UPSTREAM_PROXY_URL, then UPSTREAM_HTTP_PROXY_URL.
+
+### 8.4.1 Full Environment Variable Reference
+
+- `PROXY_PORT`: Proxy server port. Default `8080`.
+- `REPO_PORT`: Local repository server port. Default `8081`.
+- `CACHE_DIR`: Base cache directory. Default `data/cache`.
+- `REPO_FALLBACK_REPOS`: Comma-separated fallback repository URLs for cache misses.
+- `ENABLE_HTTPS_PROXY`: Enable HTTPS proxy handling (`true/false`).
+- `HTTPS_MITM_DOMAINS`: Comma-separated domains to apply MITM certificate issuance (wildcards supported).
+- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: Whether unmatched HTTPS domains are tunneled directly.
+- `NPM_REGISTRY_DOMAINS`: Domains treated as npm ecosystem for cache routing (wildcards supported).
+- `MAVEN_REPO_DOMAINS`: Domains treated as Maven ecosystem for cache routing (wildcards supported).
+- `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
+- `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
+- `MULTI_THREAD_MIN_SIZE_BYTES`: Minimum size threshold to trigger multi-thread download.
+- `DOWNLOAD_TIMEOUT_MS`: Upstream request timeout in milliseconds.
+- `DOWNLOAD_LOG_DIR`: Directory for download/console logs.
+- `LOG_RETENTION_DAYS`: Number of days to keep log files.
+- `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
+- `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
+- `UPSTREAM_HTTPS_PROXY_URL`: Upstream proxy URL for HTTPS requests.
+- `UPSTREAM_NO_PROXY`: Comma-separated domains that bypass upstream proxy (wildcards supported, `*` means bypass all).
+- `UPSTREAM_IGNORE_DOMAINS`: Additional bypass domains (wildcards supported).
+- `CERT_DIR`: Base directory for certificates.
+- `ROOT_CERT_PATH`: Path to Root CA certificate.
+- `ROOT_KEY_PATH`: Path to Root CA private key.
+- `LEAF_CERT_DIR`: Directory for issued leaf certificates.
+- `TRUST_STORE_PATH`: Path to Java trust store file.
+- `TRUST_STORE_ALIAS`: Alias used when importing Root CA into trust store.
+- `TRUST_STORE_PASSWORD`: Trust store password.
+- `JAVA_HOME`: Preferred Java home path. If empty or invalid, auto-detection is used.
+- `MAVEN_PROXY_CONFIG_MODE`: Config load mode (`development` or `user`).
+- `MAVEN_PROXY_CONFIG_FILE`: Explicit config file path override.
 
 ### 8.5 Trust Store Merge
 

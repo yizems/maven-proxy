@@ -244,12 +244,12 @@ npm start
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（如 `http://127.0.0.1:8888`）。
 - `UPSTREAM_HTTP_PROXY_URL`: 仅 HTTP 出站使用的上级代理。
 - `UPSTREAM_HTTPS_PROXY_URL`: 仅 HTTPS 出站使用的上级代理。
-- `UPSTREAM_NO_PROXY`: 不走上级代理的域名列表（逗号分隔）。
+- `UPSTREAM_NO_PROXY`: 不走上级代理的域名列表（逗号分隔，支持通配符，如 `*.internal.local`，`*` 表示全部直连）。
 - `UPSTREAM_IGNORE_DOMAINS`: 上级代理忽略域名列表（逗号分隔，支持通配符，如 `*.acb.com`）。
 - `REPO_FALLBACK_REPOS`: 仓库端口回源地址列表（逗号分隔），默认：Maven Central、JitPack、Gradle Plugin Portal、Google Maven。
-- `NPM_REGISTRY_DOMAINS`: npm 域名识别列表（用于缓存分流），默认：`registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com`。
-- `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
-- `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名。
+- `NPM_REGISTRY_DOMAINS`: npm 域名识别列表（用于缓存分流，支持通配符），默认：`registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com`。
+- `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流，支持通配符），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
+- `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名（支持通配符）。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；下载日志与 console 日志都在该目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
@@ -258,12 +258,46 @@ npm start
 说明：
 
 - `UPSTREAM_NO_PROXY` 与 `UPSTREAM_IGNORE_DOMAINS` 会合并生效。
+- 当前实现中，这两个列表的匹配行为等价；建议将 `UPSTREAM_NO_PROXY` 用于标准 no-proxy 配置，将 `UPSTREAM_IGNORE_DOMAINS` 用于项目自定义排除项。
 - 支持精确域名与通配符域名（例如 `repo.maven.apache.org`、`*.acb.com`）。
 
 优先级：
 
 1. HTTP 请求优先使用 `UPSTREAM_HTTP_PROXY_URL`，其次 `UPSTREAM_PROXY_URL`。
 2. HTTPS 请求优先使用 `UPSTREAM_HTTPS_PROXY_URL`，其次 `UPSTREAM_PROXY_URL`，再其次 `UPSTREAM_HTTP_PROXY_URL`。
+
+### 8.4.1 完整环境变量说明
+
+- `PROXY_PORT`: 代理服务端口，默认 `8080`。
+- `REPO_PORT`: 本地仓库服务端口，默认 `8081`。
+- `CACHE_DIR`: 缓存根目录，默认 `data/cache`。
+- `REPO_FALLBACK_REPOS`: 缓存未命中时的回源仓库地址列表（逗号分隔）。
+- `ENABLE_HTTPS_PROXY`: 是否启用 HTTPS 代理处理（`true/false`）。
+- `HTTPS_MITM_DOMAINS`: 需要执行 MITM 证书签发的域名列表（逗号分隔，支持通配符）。
+- `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: 未命中 MITM 域名时是否允许直连隧道透传。
+- `NPM_REGISTRY_DOMAINS`: 识别为 npm 生态并分流缓存的域名列表（支持通配符）。
+- `MAVEN_REPO_DOMAINS`: 识别为 Maven 生态并分流缓存的域名列表（支持通配符）。
+- `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。
+- `MULTI_THREAD_COUNT`: 多线程下载线程数。
+- `MULTI_THREAD_MIN_SIZE_BYTES`: 触发多线程下载的最小文件大小阈值（字节）。
+- `DOWNLOAD_TIMEOUT_MS`: 上游请求超时时间（毫秒）。
+- `DOWNLOAD_LOG_DIR`: 下载与控制台日志目录。
+- `LOG_RETENTION_DAYS`: 日志保留天数。
+- `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
+- `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。
+- `UPSTREAM_HTTPS_PROXY_URL`: HTTPS 请求使用的上级代理地址。
+- `UPSTREAM_NO_PROXY`: 不走上级代理的域名列表（逗号分隔，支持通配符，`*` 表示全部直连）。
+- `UPSTREAM_IGNORE_DOMAINS`: 额外忽略上级代理的域名列表（支持通配符）。
+- `CERT_DIR`: 证书根目录。
+- `ROOT_CERT_PATH`: Root CA 证书路径。
+- `ROOT_KEY_PATH`: Root CA 私钥路径。
+- `LEAF_CERT_DIR`: 站点叶子证书目录。
+- `TRUST_STORE_PATH`: Java trust store 文件路径。
+- `TRUST_STORE_ALIAS`: 导入 Root CA 到 trust store 时使用的别名。
+- `TRUST_STORE_PASSWORD`: trust store 密码。
+- `JAVA_HOME`: Java 安装路径。为空或无效时会自动探测。
+- `MAVEN_PROXY_CONFIG_MODE`: 配置加载模式（`development` 或 `user`）。
+- `MAVEN_PROXY_CONFIG_FILE`: 显式指定配置文件路径（优先级最高）。
 
 ### 8.3 最小验证命令（Windows）
 
