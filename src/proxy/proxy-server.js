@@ -12,12 +12,20 @@ function sendErrorText(res, statusCode, message) {
   sendText(res, statusCode, message);
 }
 
-export function startProxyServer(config, certManager, downloader, matchesDomain, upstreamProxyManager = null) {
+export function startProxyServer(
+  config,
+  certManager,
+  downloader,
+  matchesDomain,
+  upstreamProxyManager = null,
+  mavenAffinityIndex = null,
+) {
   const handleHttpRequestPath = createHttpRequestHandler({
     config,
     downloader,
     upstreamProxyManager,
     matchesDomain,
+    mavenAffinityIndex,
   });
   const mitmHttpServer = createMitmHttpServer(handleHttpRequestPath);
 

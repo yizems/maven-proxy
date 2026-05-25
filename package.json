@@ -33,7 +33,9 @@
     "npm:version:patch": "npm version patch",
     "npm:view:version": "npm view maven-proxy version",
     "npm:view:dist-tags": "npm view maven-proxy dist-tags",
-    "test": "node -e \"console.log('No tests yet')\""
+    "replay:affinity": "node --test test/replay-affinity.test.js",
+    "test:replay": "node --test test/replay-affinity.test.js",
+    "test": "node --test test/*.test.js"
   },
   "keywords": [],
   "author": "",

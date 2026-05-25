@@ -7,6 +7,7 @@ import { startProxyServer } from "./proxy/proxy-server.js";
 import { startRepoServer } from "./repo/repo-server.js";
 import { getTrustStoreCommands } from "./cert/truststore-utils.js";
 import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
+import { MavenAffinityIndex } from "./cache/maven-affinity-index.js";
 import { installConsoleLogFileMirror, installGlobalErrorLogging } from "./common/console-log-file.js";
 
 installConsoleLogFileMirror({
@@ -34,6 +35,8 @@ async function main() {
   }
 
   const upstreamProxyManager = new UpstreamProxyManager(config, matchesDomain);
+  const mavenAffinityIndex = new MavenAffinityIndex(config);
+  await mavenAffinityIndex.init();
 
   const downloader = new Downloader(config, matchesDomain, upstreamProxyManager);
 
@@ -43,6 +46,7 @@ async function main() {
     downloader,
     matchesDomain,
     upstreamProxyManager,
+    mavenAffinityIndex,
   );
   const repoServer = startRepoServer(config, downloader);
 
@@ -67,6 +71,9 @@ async function main() {
   console.log(`[maven-proxy] outbound keepAliveMsecs: ${config.outboundKeepAliveMsecs}`);
   console.log(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);
   console.log(`[maven-proxy] outbound maxFreeSockets: ${config.outboundMaxFreeSockets}`);
+  console.log(`[maven-proxy] maven affinity enabled: ${config.mavenAffinityEnabled}`);
+  console.log(`[maven-proxy] maven affinity index dir: ${config.mavenAffinityIndexDir}`);
+  console.log(`[maven-proxy] maven negative cache ttl(ms): ${config.mavenNegativeCacheTtlMs}`);
   console.log(`[maven-proxy] root cert : ${config.rootCertPath}`);
   console.log(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {
@@ -86,6 +93,7 @@ async function main() {
     mitmHttpServer.close();
     repoServer.close();
     upstreamProxyManager.destroy();
+    void mavenAffinityIndex.destroy();
   };
 
   process.on("SIGINT", shutdown);

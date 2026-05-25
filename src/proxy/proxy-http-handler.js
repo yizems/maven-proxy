@@ -4,6 +4,7 @@ import https from "node:https";
 import path from "node:path";
 import { getCacheFilePath } from "../cache/cache-path.js";
 import { detectPackageEcosystem } from "../common/ecosystem.js";
+import { parseMavenReleaseCanonical } from "../common/maven-canonical.js";
 
 const LOCAL_FS_ERROR_CODES = new Set([
   "EACCES",
@@ -158,7 +159,13 @@ function forwardDirectRequest(req, res, urlObj, timeoutMs, upstreamProxyManager 
   req.pipe(upstreamReq);
 }
 
-export function createHttpRequestHandler({ config, downloader, upstreamProxyManager = null, matchesDomain }) {
+export function createHttpRequestHandler({
+  config,
+  downloader,
+  upstreamProxyManager = null,
+  matchesDomain,
+  mavenAffinityIndex = null,
+}) {
   return async function handleHttpRequestPath(req, res, forcedProtocol = null) {
     let urlObj;
     try {
@@ -176,12 +183,18 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
     }
 
     let cachePath;
+    let ecosystem;
+    let canonical = null;
     try {
-      const ecosystem = detectPackageEcosystem(urlObj, config, matchesDomain);
+      ecosystem = detectPackageEcosystem(urlObj, config, matchesDomain);
       cachePath = getCacheFilePath(config.cacheDir, urlObj, {
         ecosystem,
         includeHost: ecosystem !== "maven",
       });
+
+      if (ecosystem === "maven" && mavenAffinityIndex?.enabled) {
+        canonical = parseMavenReleaseCanonical(urlObj);
+      }
     } catch (error) {
       const message = `Invalid cache path: ${error.message}`;
       sendErrorText(res, 400, message, "proxy");
@@ -194,12 +207,49 @@ export function createHttpRequestHandler({ config, downloader, upstreamProxyMana
       return;
     }
 
+    if (canonical && mavenAffinityIndex) {
+      const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
+      if (preferredPath) {
+        console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
+        await serveFile(res, req, preferredPath);
+        return;
+      }
+
+      if (mavenAffinityIndex.shouldSkipRequest(canonical.canonicalKey, urlObj)) {
+        console.log(`[proxy] affinity negative skip canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
+        sendText(res, 404, "Not Found");
+        return;
+      }
+    }
+
     try {
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
+
+      if (canonical && mavenAffinityIndex) {
+        mavenAffinityIndex.recordSuccess({
+          canonicalKey: canonical.canonicalKey,
+          host: urlObj.hostname,
+          cachePath,
+          fileName: canonical.fileName,
+        });
+      }
+
       res.setHeader("x-cache", "MISS");
       await serveFile(res, req, cachePath);
     } catch (error) {
+      if (
+        canonical &&
+        mavenAffinityIndex &&
+        (error.statusCode === 404 || error.statusCode === 410)
+      ) {
+        mavenAffinityIndex.recordNegative({
+          canonicalKey: canonical.canonicalKey,
+          urlObj,
+          statusCode: error.statusCode,
+        });
+      }
+
       if (isLocalFsWriteError(error)) {
         if (!error.statusCode) {
           error.statusCode = 500;
