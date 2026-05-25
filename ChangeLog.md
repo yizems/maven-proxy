@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [1.2.0]
 
 ### Breaking Changes
 - Removed legacy environment variable compatibility. The following legacy keys are no longer supported:
