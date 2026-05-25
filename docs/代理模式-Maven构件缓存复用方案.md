@@ -49,6 +49,7 @@
 ### 5.1 正向索引（positive）
 - key: `canonicalKey`（即归一化后的 `group/artifact/version/file`）
 - value: `cachePath`, `fileName`, `host`, `updatedAt`
+- 过期策略：无 TTL，不做时间过期；仅在本地文件不存在或发生冲突时移除
 
 作用：
 - 当 URL 原路径未命中时，优先查正向索引，命中则直接返回缓存文件。
@@ -56,6 +57,7 @@
 ### 5.2 负向索引（negative）
 - key: `requestScope|canonicalKey`
 - value: `statusCode`, `expireAt`, `updatedAt`
+- 过期策略：仅负缓存使用 TTL，到期自动失效
 
 作用：
 - 某请求作用域（协议+host:port+pathname）对某构件返回 404/410 后，在 TTL 期间直接跳过同作用域请求。

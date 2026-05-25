@@ -232,6 +232,7 @@ export function createHttpRequestHandler({
           host: urlObj.hostname,
           cachePath,
           fileName: canonical.fileName,
+          urlObj,
         });
       }
 

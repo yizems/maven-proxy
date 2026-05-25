@@ -75,6 +75,8 @@ export class MavenAffinityIndex {
     this.snapshotPath = path.join(this.indexDir, "maven-affinity.snapshot.json");
     this.eventLogPath = path.join(this.indexDir, "maven-affinity.events.log");
 
+    // Positive entries are persistent and have no TTL. They are removed only
+    // when the cache file disappears or a conflict is detected.
     this.positive = new Map();
     this.negative = new Map();
     this.conflicts = new Map();
@@ -269,7 +271,7 @@ export class MavenAffinityIndex {
     return true;
   }
 
-  recordSuccess({ canonicalKey, host, cachePath, fileName }) {
+  recordSuccess({ canonicalKey, host, cachePath, fileName, urlObj = null }) {
     if (!this.enabled || !canonicalKey || !cachePath || !fileName) {
       return;
     }
@@ -309,8 +311,9 @@ export class MavenAffinityIndex {
       },
     });
 
-    if (host) {
-      const negativeKey = buildNegativeKey(host, canonicalKey);
+    const successScope = buildNegativeScope(urlObj);
+    if (successScope) {
+      const negativeKey = buildNegativeKey(successScope, canonicalKey);
       if (this.negative.has(negativeKey)) {
         this.#applyEvent({
           type: "negative_remove",
