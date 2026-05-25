@@ -211,6 +211,7 @@ export const config = {
   mavenAffinityEventMaxBytes: Math.max(64 * 1024, toInt(process.env.MAVEN_AFFINITY_EVENT_MAX_BYTES, 8 * 1024 * 1024)),
   downloadLogDir: path.resolve(configBaseDir, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
   logRetentionDays: Math.max(1, toInt(process.env.LOG_RETENTION_DAYS, 7)),
+  logToStdout: toBool(process.env.LOG_TO_STDOUT, true),
   certDir: path.resolve(configBaseDir, process.env.CERT_DIR || "data/certs"),
   rootCertPath: path.resolve(configBaseDir, process.env.ROOT_CERT_PATH || "data/certs/root-ca.crt"),
   rootKeyPath: path.resolve(configBaseDir, process.env.ROOT_KEY_PATH || "data/certs/root-ca.key.pem"),

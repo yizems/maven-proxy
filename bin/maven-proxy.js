@@ -162,6 +162,7 @@ function getDefaultConfigTemplate() {
     "MAVEN_AFFINITY_EVENT_MAX_BYTES=8388608",
     "DOWNLOAD_LOG_DIR=data/logs/downloads",
     "LOG_RETENTION_DAYS=7",
+    "LOG_TO_STDOUT=false",
     "UPSTREAM_PROXY_URL=",
     "UPSTREAM_HTTP_PROXY_URL=",
     "UPSTREAM_HTTPS_PROXY_URL=",

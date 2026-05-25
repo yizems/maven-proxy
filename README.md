@@ -267,6 +267,7 @@ Environment variables:
 - HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION_DAYS: number of days to retain logs.
+- LOG_TO_STDOUT: whether to also print logs to stdout/stderr.
 - OUTBOUND_KEEP_ALIVE: enable outbound keep-alive connection pooling.
 - OUTBOUND_KEEP_ALIVE_MSECS: keep-alive interval in milliseconds.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
@@ -300,8 +301,9 @@ Priority:
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
 - `MULTI_THREAD_MIN_SIZE_BYTES`: Minimum size threshold to trigger multi-thread download.
 - `DOWNLOAD_TIMEOUT_MS`: Upstream request timeout in milliseconds.
-- `DOWNLOAD_LOG_DIR`: Directory for download/console logs.
+- `DOWNLOAD_LOG_DIR`: Directory for unified app/error logs.
 - `LOG_RETENTION_DAYS`: Number of days to keep log files.
+- `LOG_TO_STDOUT`: Whether to also print logs to stdout/stderr. Default `true`.
 - `OUTBOUND_KEEP_ALIVE`: Enable outbound keep-alive connection pooling. Default `true`.
 - `OUTBOUND_KEEP_ALIVE_MSECS`: Keep-alive interval in milliseconds. Default `1000`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.

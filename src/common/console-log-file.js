@@ -4,45 +4,75 @@ import { DailyLogFile } from "./daily-log-file.js";
 const MIRROR_INSTALLED = Symbol.for("maven-proxy.console-log-file.installed");
 const GLOBAL_ERROR_HOOK_INSTALLED = Symbol.for("maven-proxy.global-error-hook.installed");
 
-function mirrorConsoleMethod({ level, originalMethod, logFile }) {
+function mirrorConsoleMethod({
+  level,
+  originalMethod,
+  appLogFile,
+  errorLogFile,
+  outputToConsole,
+}) {
   return (...args) => {
-    originalMethod(...args);
+    if (outputToConsole) {
+      originalMethod(...args);
+    }
 
     const line = `[${new Date().toISOString()}] [${level}] ${util.format(...args)}`;
-    logFile.appendLine(line).catch((error) => {
+    appLogFile.appendLine(line).catch((error) => {
       process.stderr.write(`[maven-proxy] write console log failed: ${error.message}\n`);
     });
+
+    if (level === "ERROR") {
+      errorLogFile.appendLine(line).catch((error) => {
+        process.stderr.write(`[maven-proxy] write error log failed: ${error.message}\n`);
+      });
+    }
   };
 }
 
-export function installConsoleLogFileMirror({ logDir, retentionDays = 7 }) {
+export function installConsoleLogFileMirror({
+  logDir,
+  retentionDays = 7,
+  outputToConsole = true,
+}) {
   if (globalThis[MIRROR_INSTALLED]) {
     return;
   }
   globalThis[MIRROR_INSTALLED] = true;
 
-  const logFile = new DailyLogFile({
+  const appLogFile = new DailyLogFile({
     logDir,
-    filePrefix: "console",
+    filePrefix: "app",
+    retentionDays,
+  });
+
+  const errorLogFile = new DailyLogFile({
+    logDir,
+    filePrefix: "error",
     retentionDays,
   });
 
   console.log = mirrorConsoleMethod({
     level: "INFO",
     originalMethod: console.log.bind(console),
-    logFile,
+    appLogFile,
+    errorLogFile,
+    outputToConsole,
   });
 
   console.warn = mirrorConsoleMethod({
     level: "WARN",
     originalMethod: console.warn.bind(console),
-    logFile,
+    appLogFile,
+    errorLogFile,
+    outputToConsole,
   });
 
   console.error = mirrorConsoleMethod({
     level: "ERROR",
     originalMethod: console.error.bind(console),
-    logFile,
+    appLogFile,
+    errorLogFile,
+    outputToConsole,
   });
 }
 

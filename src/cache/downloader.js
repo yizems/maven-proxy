@@ -3,7 +3,6 @@ import http from "node:http";
 import https from "node:https";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
-import { DownloadLogWriter } from "../common/download-log-writer.js";
 
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
@@ -288,7 +287,6 @@ export class Downloader {
     this.domainMatcher = domainMatcher;
     this.upstreamProxyManager = upstreamProxyManager;
     this.inflight = new Map();
-    this.downloadLogWriter = new DownloadLogWriter(config.downloadLogDir, config.logRetentionDays);
   }
 
   logDownload(event, urlObj, details = {}) {
@@ -299,7 +297,6 @@ export class Downloader {
       .join(" ");
 
     console.log(`[downloader] ${event} url=${url}${detailText ? ` ${detailText}` : ""}`);
-    this.downloadLogWriter.write(event, url, details);
   }
 
   async ensureCached(urlObj, finalPath, requestHeaders = {}) {

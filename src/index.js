@@ -13,6 +13,7 @@ import { installConsoleLogFileMirror, installGlobalErrorLogging } from "./common
 installConsoleLogFileMirror({
   logDir: config.downloadLogDir,
   retentionDays: config.logRetentionDays,
+  outputToConsole: config.logToStdout,
 });
 installGlobalErrorLogging();
 
@@ -65,8 +66,9 @@ async function main() {
   console.log(`[maven-proxy] cache maven: ${config.mavenCacheDir}`);
   console.log(`[maven-proxy] cache npm  : ${config.npmCacheDir}`);
   console.log(`[maven-proxy] cache other: ${config.genericCacheDir}`);
-  console.log(`[maven-proxy] download log: ${config.downloadLogDir}`);
+  console.log(`[maven-proxy] log dir: ${config.downloadLogDir}`);
   console.log(`[maven-proxy] log retention days: ${config.logRetentionDays}`);
+  console.log(`[maven-proxy] log to stdout: ${config.logToStdout}`);
   console.log(`[maven-proxy] outbound keep-alive: ${config.outboundKeepAlive}`);
   console.log(`[maven-proxy] outbound keepAliveMsecs: ${config.outboundKeepAliveMsecs}`);
   console.log(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);
