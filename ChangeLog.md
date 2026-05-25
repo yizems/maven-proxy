@@ -2,6 +2,38 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.0] - 2026-05-25
+
+### Breaking Changes
+- Removed compatibility for legacy time environment variable keys. The following keys are no longer supported:
+  - `DOWNLOAD_TIMEOUT_SECONDS`
+  - `OUTBOUND_KEEP_ALIVE_SECONDS`
+  - `MAVEN_NEGATIVE_CACHE_TTL_HOURS`
+  - `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`
+  - `LOG_RETENTION_DAYS`
+- Time configuration now only accepts duration-style keys and values (`1s`, `1m`, `1h`, `1d`):
+  - `DOWNLOAD_TIMEOUT` (example: `60s`)
+  - `OUTBOUND_KEEP_ALIVE_INTERVAL` (example: `1s`)
+  - `MAVEN_NEGATIVE_CACHE_TTL` (example: `24h`)
+  - `MAVEN_AFFINITY_FLUSH_INTERVAL` (example: `5s`)
+  - `LOG_RETENTION` (example: `7d`)
+
+### Added
+- Added cache cleanup manager with:
+  - cache-hit mtime touch (`utimes`) with per-file minimum touch interval control;
+  - pressure-triggered cleanup checks on cache miss path;
+  - daily fixed-time cleanup check scheduling;
+  - staged cleanup rounds from configured retention start window down to minimum window.
+
+### Changed
+- Moved Maven affinity index default directory from cache-local `.index` to `data/index`.
+- Updated generated config template and project sample config to use new duration-style time variables.
+- Synchronized README and README-zh environment variable documentation with the new keys.
+
+### Git Commits Included (after `1.2.1`)
+- `8b7a7ab` feat: add cache cleanup manager and move affinity index to data/index
+- `ef40594` refactor: unify time env vars to duration format
+
 ## [1.2.1]
 
 ### Added
