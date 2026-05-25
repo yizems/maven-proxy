@@ -252,7 +252,7 @@ npm start
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名（支持通配符）。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；统一主日志与错误日志都在该目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
-- `LOG_TO_STDOUT`: 是否同时输出日志到命令行，默认 `true`。
+- `LOG_TO_STDOUT`: 是否同时输出运行期日志到命令行；启动日志始终输出，默认 `true`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池，默认 `true`。
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒），默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
@@ -290,7 +290,7 @@ npm start
 - `DOWNLOAD_TIMEOUT_SECONDS`: 上游请求超时时间（秒）。
 - `DOWNLOAD_LOG_DIR`: 统一主日志与错误日志目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数。
-- `LOG_TO_STDOUT`: 是否输出日志到命令行。默认 `true`。
+- `LOG_TO_STDOUT`: 是否输出运行期日志到命令行。启动日志始终输出。默认 `true`。
 - `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池。默认 `true`。
 - `OUTBOUND_KEEP_ALIVE_SECONDS`: keep-alive 间隔（秒）。默认 `1`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
