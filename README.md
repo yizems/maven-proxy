@@ -267,6 +267,10 @@ Environment variables:
 - HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION_DAYS: number of days to retain logs.
+- OUTBOUND_KEEP_ALIVE: enable outbound keep-alive connection pooling.
+- OUTBOUND_KEEP_ALIVE_MSECS: keep-alive interval in milliseconds.
+- OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
+- OUTBOUND_MAX_FREE_SOCKETS: max idle outbound sockets per origin.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
 - MAVEN_PROXY_CONFIG_FILE: explicit config file path.
 - EXISTING_TRUST_STORE_PATH: optional existing truststore path. If present, truststore init prefers it as source.
@@ -298,6 +302,10 @@ Priority:
 - `DOWNLOAD_TIMEOUT_MS`: Upstream request timeout in milliseconds.
 - `DOWNLOAD_LOG_DIR`: Directory for download/console logs.
 - `LOG_RETENTION_DAYS`: Number of days to keep log files.
+- `OUTBOUND_KEEP_ALIVE`: Enable outbound keep-alive connection pooling. Default `true`.
+- `OUTBOUND_KEEP_ALIVE_MSECS`: Keep-alive interval in milliseconds. Default `1000`.
+- `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.
+- `OUTBOUND_MAX_FREE_SOCKETS`: Max idle outbound sockets per origin. Default `16`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
 - `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
 - `UPSTREAM_HTTPS_PROXY_URL`: Upstream proxy URL for HTTPS requests.

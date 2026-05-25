@@ -1,6 +1,22 @@
+import http from "node:http";
+import https from "node:https";
 import net from "node:net";
 import tls from "node:tls";
 import { ProxyAgent } from "proxy-agent";
+
+function toPositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function buildAgentOptions(config) {
+  return {
+    keepAlive: Boolean(config.outboundKeepAlive),
+    keepAliveMsecs: toPositiveInt(config.outboundKeepAliveMsecs, 1000),
+    maxSockets: toPositiveInt(config.outboundMaxSockets, 64),
+    maxFreeSockets: toPositiveInt(config.outboundMaxFreeSockets, 16),
+  };
+}
 
 function normalizeHostname(hostname) {
   return String(hostname || "")
@@ -64,6 +80,12 @@ export class UpstreamProxyManager {
     this.config = config;
     this.matchesDomain = matchesDomain;
     this.agentCache = new Map();
+    this.directHttpAgent = new http.Agent(buildAgentOptions(config));
+    this.directHttpsAgent = new https.Agent(buildAgentOptions(config));
+  }
+
+  getDirectAgentForProtocol(protocol) {
+    return protocol === "https:" ? this.directHttpsAgent : this.directHttpAgent;
   }
 
   shouldBypass(hostname) {
@@ -111,17 +133,21 @@ export class UpstreamProxyManager {
   }
 
   getAgentForUrl(urlObj) {
-    const proxyUrl = this.getProxyUrlFor(urlObj.protocol, urlObj.hostname);
+    const protocol = urlObj?.protocol === "https:" ? "https:" : "http:";
+    const hostname = String(urlObj?.hostname || "");
+    const proxyUrl = this.getProxyUrlFor(protocol, hostname);
+
     if (!proxyUrl) {
-      return undefined;
+      return this.getDirectAgentForProtocol(protocol);
     }
 
-    const cacheKey = `${proxyUrl}`;
+    const cacheKey = `proxy:${proxyUrl}`;
     if (!this.agentCache.has(cacheKey)) {
       // proxy-agent v6 expects resolver-style options for deterministic proxy routing.
       this.agentCache.set(
         cacheKey,
         new ProxyAgent({
+          ...buildAgentOptions(this.config),
           getProxyForUrl: () => proxyUrl,
         }),
       );
@@ -132,6 +158,18 @@ export class UpstreamProxyManager {
 
   hasProxyFor(protocol, hostname) {
     return Boolean(this.getProxyUrlFor(protocol, hostname));
+  }
+
+  destroy() {
+    for (const agent of this.agentCache.values()) {
+      if (typeof agent?.destroy === "function") {
+        agent.destroy();
+      }
+    }
+
+    this.agentCache.clear();
+    this.directHttpAgent.destroy();
+    this.directHttpsAgent.destroy();
   }
 
   async createConnectTunnel(targetHost, targetPort, timeoutMs) {

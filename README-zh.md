@@ -252,6 +252,10 @@ npm start
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名（支持通配符）。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；下载日志与 console 日志都在该目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数，默认 `7`，超过天数的历史日志会自动清理。
+- `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池，默认 `true`。
+- `OUTBOUND_KEEP_ALIVE_MSECS`: keep-alive 间隔（毫秒），默认 `1000`。
+- `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
+- `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站保留的空闲连接上限，默认 `16`。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
 - `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
 - `EXISTING_TRUST_STORE_PATH`: 已有 truststore 路径（可选）。若文件存在，`truststore init` 会优先以它作为源。
@@ -285,6 +289,10 @@ npm start
 - `DOWNLOAD_TIMEOUT_MS`: 上游请求超时时间（毫秒）。
 - `DOWNLOAD_LOG_DIR`: 下载与控制台日志目录。
 - `LOG_RETENTION_DAYS`: 日志保留天数。
+- `OUTBOUND_KEEP_ALIVE`: 是否启用出站 keep-alive 连接复用池。默认 `true`。
+- `OUTBOUND_KEEP_ALIVE_MSECS`: keep-alive 间隔（毫秒）。默认 `1000`。
+- `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
+- `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站可保留的空闲连接上限。默认 `16`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
 - `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。
 - `UPSTREAM_HTTPS_PROXY_URL`: HTTPS 请求使用的上级代理地址。

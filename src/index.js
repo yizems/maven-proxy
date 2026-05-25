@@ -63,6 +63,10 @@ async function main() {
   console.log(`[maven-proxy] cache other: ${config.genericCacheDir}`);
   console.log(`[maven-proxy] download log: ${config.downloadLogDir}`);
   console.log(`[maven-proxy] log retention days: ${config.logRetentionDays}`);
+  console.log(`[maven-proxy] outbound keep-alive: ${config.outboundKeepAlive}`);
+  console.log(`[maven-proxy] outbound keepAliveMsecs: ${config.outboundKeepAliveMsecs}`);
+  console.log(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);
+  console.log(`[maven-proxy] outbound maxFreeSockets: ${config.outboundMaxFreeSockets}`);
   console.log(`[maven-proxy] root cert : ${config.rootCertPath}`);
   console.log(`[maven-proxy] repo fallback repos: ${(config.repoFallbackRepos || []).join(",") || "(none)"}`);
   if (config.upstreamProxyUrl || config.upstreamHttpProxyUrl || config.upstreamHttpsProxyUrl) {
@@ -81,6 +85,7 @@ async function main() {
     proxyServer.close();
     mitmHttpServer.close();
     repoServer.close();
+    upstreamProxyManager.destroy();
   };
 
   process.on("SIGINT", shutdown);
