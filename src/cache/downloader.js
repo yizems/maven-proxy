@@ -326,6 +326,8 @@ export class Downloader {
   }
 
   async #downloadAtomic(urlObj, finalPath, requestHeaders) {
+    const startedAt = Date.now();
+
     await fs.promises.mkdir(path.dirname(finalPath), { recursive: true });
     const tempPath = `${finalPath}.temp`;
     await removeIfExists(tempPath);
@@ -388,6 +390,14 @@ export class Downloader {
 
       await verifyFileSize(tempPath, metadata.contentLength);
       await fs.promises.rename(tempPath, finalPath);
+
+      const finalStats = await fs.promises.stat(finalPath);
+      this.logDownload("download succeeded", downloadUrl, {
+        host: hostname,
+        targetPath: finalPath,
+        size: finalStats.size,
+        elapsedMs: Date.now() - startedAt,
+      });
     } catch (error) {
       if (isLocalFsWriteError(error)) {
         if (!error.statusCode) {
