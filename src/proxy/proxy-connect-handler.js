@@ -143,9 +143,8 @@ export function attachConnectHandler(server, {
     }
 
     const mitmEnabled =
-      (config.enableHttpsProxy &&
-        matchesDomain(host, config.httpsMitmDomains)) ||
-      !config.httpsPassthroughForUnmatched;
+      config.enableHttpsProxy &&
+      matchesDomain(host, config.httpsMitmDomains);
 
     if (config.logConnectEvents) {
       console.log(`[proxy] CONNECT ${host}:${port} mitm=${mitmEnabled}`);
