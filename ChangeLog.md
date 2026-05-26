@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.1] - 2026-05-26
+
+### Added
+- Generated default CLI config now includes bilingual Chinese/English comments for each property, aligned with README environment variable descriptions.
+- Added `cli:doctor:user` npm script to run doctor checks in user mode.
+
+### Changed
+- Updated default Google Maven endpoints from `maven.google.com` to `dl.google.com` in runtime defaults and generated config defaults.
+
+### Git Commits Included (after `1.3.0`)
+- `e2398a7` feat(cli): add bilingual default config comments and refresh repo defaults
+
 ## [1.3.0] - 2026-05-25
 
 ### Breaking Changes
