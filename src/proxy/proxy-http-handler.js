@@ -36,6 +36,44 @@ function pickClient(protocol) {
   return protocol === "https:" ? https : http;
 }
 
+function hasFileExtension(urlObj) {
+  try {
+    const pathname = String(urlObj?.pathname || "");
+    const base = path.basename(pathname || "").toLowerCase();
+    if (!base) return false;
+
+    const knownSuffixes = [
+      ".pom",
+      ".jar",
+      ".aar",
+      ".war",
+      ".zip",
+      ".module",
+      ".xml",
+      ".sha1",
+      ".md5",
+      ".sha256",
+      ".sha512",
+      ".asc",
+      ".json",
+      ".toml",
+      ".klib",
+      ".tgz",
+      ".tar.gz",
+    ];
+
+    if (knownSuffixes.some((s) => base.endsWith(s))) return true;
+
+    const ext = path.extname(base);
+    if (!ext) return false;
+
+    // Treat numeric-only extensions (like version segments) as NOT an extension.
+    return /[a-zA-Z]/.test(ext);
+  } catch {
+    return false;
+  }
+}
+
 function sanitizeHeaders(headers = {}) {
   const result = { ...headers };
   const blocked = [
@@ -222,6 +260,14 @@ export function createHttpRequestHandler({
         sendText(res, 404, "Not Found");
         return;
       }
+    }
+
+    // If the requested resource has no file extension, do not cache it.
+    // If a file without extension already exists in cache, it was handled above.
+    if (!hasFileExtension(urlObj)) {
+      console.log(`[proxy] skip caching for extensionless path host=${urlObj.hostname} path=${urlObj.pathname}`);
+      forwardDirectRequest(req, res, urlObj, config.downloadTimeoutMs, upstreamProxyManager);
+      return;
     }
 
     try {
