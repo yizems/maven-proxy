@@ -3,6 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import dotenv from "dotenv";
 import { detectJavaHome } from "../common/java-home.js";
+import { parseSizeToBytes } from "../common/size-utils.js";
+import { parseDurationToMs } from "../common/format-utils.js";
 import { parseMavenCacheIgnorePathPrefixes } from "../cache/cache-path.js";
 
 const cwd = process.cwd();
@@ -100,37 +102,9 @@ function toInt(value, defaultValue) {
   return Number.isFinite(parsed) ? parsed : defaultValue;
 }
 
-function parseDurationToMs(value, fallbackMs) {
-  const text = String(value || "").trim();
-  if (!text) {
-    return fallbackMs;
-  }
 
-  const match = text.match(/^(\d+)([smhd])$/i);
-  if (!match) {
-    return fallbackMs;
-  }
 
-  const amount = Number.parseInt(match[1], 10);
-  const unit = String(match[2] || "").toLowerCase();
-  if (!Number.isFinite(amount) || amount < 0) {
-    return fallbackMs;
-  }
-
-  if (unit === "s") {
-    return amount * 1000;
-  }
-
-  if (unit === "m") {
-    return amount * 60 * 1000;
-  }
-
-  if (unit === "h") {
-    return amount * 60 * 60 * 1000;
-  }
-
-  return amount * 24 * 60 * 60 * 1000;
-}
+ 
 
 function toList(value, defaultValue = []) {
   if (!value) {
@@ -226,7 +200,7 @@ const defaultMavenRepoDomains = [
 
 const cacheDir = path.resolve(configBaseDir, process.env.CACHE_DIR || "data/cache");
 
-const multiThreadMinSizeBytes = Math.max(0, toInt(process.env.MULTI_THREAD_MIN_SIZE_MB, 1)) * 1024 * 1024;
+const multiThreadMinSizeBytes = Math.max(0, parseSizeToBytes(process.env.MULTI_THREAD_MIN_SIZE_MB ?? "1M", 1 * 1024 * 1024));
 const downloadTimeout = process.env.DOWNLOAD_TIMEOUT || "60s";
 const outboundKeepAliveInterval = process.env.OUTBOUND_KEEP_ALIVE_INTERVAL || "1s";
 const mavenNegativeCacheTtl = process.env.MAVEN_NEGATIVE_CACHE_TTL || "24h";
@@ -239,7 +213,10 @@ const outboundKeepAliveMsecs = Math.max(1, parseDurationToMs(outboundKeepAliveIn
 const mavenNegativeCacheTtlMs = Math.max(1, parseDurationToMs(mavenNegativeCacheTtl, 24 * 60 * 60 * 1000));
 const mavenNegativeFlushIntervalMs = Math.max(1, parseDurationToMs(mavenNegativeFlushInterval, 5 * 1000));
 const logRetentionDays = Math.max(1, Math.ceil(parseDurationToMs(logRetention, 7 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)));
-const mavenNegativeEventMaxBytes = Math.max(1, toInt(process.env.MAVEN_NEGATIVE_EVENT_MAX_MB ?? process.env.MAVEN_AFFINITY_EVENT_MAX_MB, 8)) * 1024 * 1024;
+const mavenNegativeEventMaxBytes = Math.max(
+  1,
+  Math.floor(parseSizeToBytes(process.env.MAVEN_NEGATIVE_EVENT_MAX_MB ?? process.env.MAVEN_AFFINITY_EVENT_MAX_MB ?? "8M", 8 * 1024 * 1024) / (1024 * 1024)),
+) * 1024 * 1024;
 
 export const config = {
   configMode,

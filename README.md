@@ -333,7 +333,7 @@ Priority:
 - `MAVEN_CACHE_IGNORE_PATH_PREFIXES`: Maven cache path-prefix ignore rules (comma-separated, supports `host/path` and `host:port/path`). Default `repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven`.
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
-- `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (MB).
+- `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (supports `K/M/G/T`, e.g. `1M` or `512K`). Default `1M`.
 - `DOWNLOAD_TIMEOUT`: Upstream request timeout (supports `s/m/h/d`). Default `60s`.
 - `DOWNLOAD_LOG_DIR`: Directory for unified app/error logs.
 - `LOG_RETENTION`: Log retention duration (supports `s/m/h/d`). Default `7d`.
@@ -347,7 +347,7 @@ Priority:
  - `MAVEN_NEGATIVE_INDEX_DIR`: Maven negative index directory. Default `data/index`.
  - `MAVEN_NEGATIVE_CACHE_TTL`: Negative cache TTL (supports `s/m/h/d`). Default `24h`.
  - `MAVEN_NEGATIVE_FLUSH_INTERVAL`: Flush interval for negative event log (supports `s/m/h/d`). Default `5s`.
- - `MAVEN_NEGATIVE_EVENT_MAX_MB`: Max size threshold for negative event log compaction in MB. Default `8`.
+ - `MAVEN_NEGATIVE_EVENT_MAX_MB`: Max size threshold for negative event log compaction (supports `K/M/G/T`, e.g. `8M` or `8192K`). Default `8M`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
 - `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
 - `UPSTREAM_HTTPS_PROXY_URL`: Upstream proxy URL for HTTPS requests.

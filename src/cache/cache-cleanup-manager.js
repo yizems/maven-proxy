@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { parseSizeToBytes } from "../common/size-utils.js";
+import { parseDurationToMs, formatBytes } from "../common/format-utils.js";
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
@@ -14,67 +16,7 @@ function toBool(value, fallback) {
   return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
 }
 
-function parseDurationToMs(raw, fallbackMs) {
-  const text = String(raw || "").trim();
-  if (!text) {
-    return fallbackMs;
-  }
 
-  const match = text.match(/^(\d+)([smhd])$/i);
-  if (!match) {
-    return fallbackMs;
-  }
-
-  const value = Number.parseInt(match[1], 10);
-  const unit = match[2].toLowerCase();
-  if (!Number.isFinite(value) || value < 0) {
-    return fallbackMs;
-  }
-
-  if (unit === "s") {
-    return value * SECOND_MS;
-  }
-  if (unit === "m") {
-    return value * MINUTE_MS;
-  }
-  if (unit === "h") {
-    return value * HOUR_MS;
-  }
-
-  return value * DAY_MS;
-}
-
-function parseSizeToBytes(raw, fallbackBytes = 0) {
-  const text = String(raw || "").trim();
-  if (!text) {
-    return fallbackBytes;
-  }
-
-  const match = text.match(/^(\d+)([KMGT]?)$/i);
-  if (!match) {
-    return fallbackBytes;
-  }
-
-  const value = Number.parseInt(match[1], 10);
-  if (!Number.isFinite(value) || value < 0) {
-    return fallbackBytes;
-  }
-
-  const unit = String(match[2] || "").toUpperCase();
-  const unitPow = {
-    "": 0,
-    K: 1,
-    M: 2,
-    G: 3,
-    T: 4,
-  }[unit];
-
-  if (unitPow == null) {
-    return fallbackBytes;
-  }
-
-  return value * (1024 ** unitPow);
-}
 
 function parseDailyAt(text, fallback = { hour: 3, minute: 0 }) {
   const raw = String(text || "").trim();
@@ -152,27 +94,7 @@ async function getDirSizeBytes(dirPath) {
   return total;
 }
 
-function formatBytes(bytes) {
-  const value = Number(bytes || 0);
-  if (!Number.isFinite(value) || value < 0) {
-    return "0B";
-  }
-
-  if (value >= 1024 ** 4) {
-    return `${(value / (1024 ** 4)).toFixed(2)}TB`;
-  }
-  if (value >= 1024 ** 3) {
-    return `${(value / (1024 ** 3)).toFixed(2)}GB`;
-  }
-  if (value >= 1024 ** 2) {
-    return `${(value / (1024 ** 2)).toFixed(2)}MB`;
-  }
-  if (value >= 1024) {
-    return `${(value / 1024).toFixed(2)}KB`;
-  }
-
-  return `${Math.floor(value)}B`;
-}
+// parseDurationToMs and formatBytes provided by ../common/format-utils.js
 
 export class CacheCleanupManager {
   constructor(config) {

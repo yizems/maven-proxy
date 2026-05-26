@@ -320,7 +320,7 @@ npm start
 - `MAVEN_CACHE_IGNORE_PATH_PREFIXES`: Maven 缓存应忽略的路径前缀规则（逗号分隔，支持 `host/path` 与 `host:port/path`）。默认 `repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven`。
 - `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。
 - `MULTI_THREAD_COUNT`: 多线程下载线程数。
-- `MULTI_THREAD_MIN_SIZE_MB`: 触发多线程下载的最小文件大小阈值（MB）。
+- `MULTI_THREAD_MIN_SIZE_MB`: 触发多线程下载的最小文件大小阈值（支持 `K/M/G/T`，例如 `1M` 或 `512K`）。默认 `1M`。
 - `DOWNLOAD_TIMEOUT`: 上游请求超时时间（支持 `s/m/h/d`）。默认 `60s`。
 - `DOWNLOAD_LOG_DIR`: 统一主日志与错误日志目录。
 - `LOG_RETENTION`: 日志保留时长（支持 `s/m/h/d`）。默认 `7d`。
@@ -334,7 +334,7 @@ npm start
  - `MAVEN_NEGATIVE_INDEX_DIR`: Maven negative 索引目录。默认 `data/index`。
  - `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`）。默认 `24h`。
  - `MAVEN_NEGATIVE_FLUSH_INTERVAL`: negative 事件日志 flush 周期（支持 `s/m/h/d`）。默认 `5s`。
- - `MAVEN_NEGATIVE_EVENT_MAX_MB`: negative 事件日志压缩阈值（MB）。默认 `8`。
+ - `MAVEN_NEGATIVE_EVENT_MAX_MB`: negative 事件日志压缩阈值（支持 `K/M/G/T`，例如 `8M` 或 `8192K`）。默认 `8M`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
 - `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。
 - `UPSTREAM_HTTPS_PROXY_URL`: HTTPS 请求使用的上级代理地址。

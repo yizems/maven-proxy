@@ -183,7 +183,7 @@ function getDefaultConfigTemplate() {
   appendEntry("MAVEN_CACHE_IGNORE_PATH_PREFIXES", "repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven", "Maven 缓存应忽略的路径前缀规则（逗号分隔，支持 host/path 与 host:port/path）。", "Maven cache path-prefix ignore rules (comma-separated, supports host/path and host:port/path).");
   appendEntry("MULTI_THREAD_DOMAINS", "repo1.maven.org", "启用多线程下载的域名列表（支持通配符）。", "Domains that enable multi-thread download (wildcard supported).");
   appendEntry("MULTI_THREAD_COUNT", "8", "多线程下载线程数，默认 8。", "Thread count for multi-thread download. Default: 8.");
-  appendEntry("MULTI_THREAD_MIN_SIZE_MB", "1", "触发多线程下载的最小文件大小阈值（MB），默认 1。", "Minimum file size threshold in MB to trigger multi-thread download. Default: 1.");
+  appendEntry("MULTI_THREAD_MIN_SIZE_MB", "1M", "触发多线程下载的最小文件大小阈值（支持 K/M/G/T，例如 1M 或 512K），默认 1M。", "Minimum file size threshold to trigger multi-thread download (supports K/M/G/T, e.g. 1M or 512K). Default: 1M.");
   appendEntry("DOWNLOAD_TIMEOUT", "60s", "上游请求超时时间（支持 s/m/h/d），默认 60s。", "Upstream request timeout (supports s/m/h/d). Default: 60s.");
   appendEntry("DOWNLOAD_LOG_DIR", "data/logs/downloads", "统一主日志与错误日志目录。", "Unified main and error log directory.");
   appendEntry("LOG_RETENTION", "7d", "日志保留时长（支持 s/m/h/d），默认 7d。", "Log retention duration (supports s/m/h/d). Default: 7d.");
@@ -197,7 +197,7 @@ function getDefaultConfigTemplate() {
   appendEntry("MAVEN_NEGATIVE_INDEX_DIR", "data/index", "Maven negative 索引目录，默认 data/index。", "Maven negative index directory. Default: data/index.");
   appendEntry("MAVEN_NEGATIVE_CACHE_TTL", "24h", "负缓存 TTL（支持 s/m/h/d），默认 24h。", "Negative cache TTL (supports s/m/h/d). Default: 24h.");
   appendEntry("MAVEN_NEGATIVE_FLUSH_INTERVAL", "5s", "negative 事件日志 flush 周期（支持 s/m/h/d），默认 5s。", "Negative event log flush interval (supports s/m/h/d). Default: 5s.");
-  appendEntry("MAVEN_NEGATIVE_EVENT_MAX_MB", "8", "negative 事件日志压缩阈值（MB），默认 8。", "Negative event log compaction threshold in MB. Default: 8.");
+  appendEntry("MAVEN_NEGATIVE_EVENT_MAX_MB", "8M", "negative 事件日志压缩阈值（支持 K/M/G/T，例如 8M 或 8192K），默认 8M。", "Negative event log compaction threshold (supports K/M/G/T, e.g. 8M or 8192K). Default: 8M.");
   appendEntry("UPSTREAM_PROXY_URL", "", "通用上级代理地址（HTTP/HTTPS 兜底）。", "Generic upstream proxy URL fallback for HTTP/HTTPS.");
   appendEntry("UPSTREAM_HTTP_PROXY_URL", "", "HTTP 请求使用的上级代理地址。", "Upstream proxy URL for HTTP requests.");
   appendEntry("UPSTREAM_HTTPS_PROXY_URL", "", "HTTPS 请求使用的上级代理地址。", "Upstream proxy URL for HTTPS requests.");
