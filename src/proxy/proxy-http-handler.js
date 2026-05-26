@@ -368,7 +368,10 @@ export function createHttpRequestHandler({
       }
 
       await fs.promises.mkdir(dirPath, { recursive: true });
-      await downloader.ensureCached(downloadUrlObj, cachePath, req.headers);
+      // Ensure Host header matches the actual download target when using meta.originalUrl
+      const downloadRequestHeaders = sanitizeHeaders(req.headers || {});
+      downloadRequestHeaders.host = downloadUrlObj.host;
+      await downloader.ensureCached(downloadUrlObj, cachePath, downloadRequestHeaders);
 
       if (canonical && mavenAffinityIndex) {
         try {
