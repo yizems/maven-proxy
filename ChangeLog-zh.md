@@ -2,6 +2,26 @@
 
 本文件记录了本项目的所有重要变更。
 
+## [1.3.4] - 2026-05-26
+
+### 新增
+- 实现 `meta.json` 处理以支持相关制品下载。 (4e50d41)
+- 为 HTTPS 代理添加透传配置支持。 (6f1dc7e)
+
+### 变更
+- 改进 404 响应处理。 (2226291)
+
+### 其他
+- 忽略提交：ignore。 (2446d7c)
+- 变更：prepare 1.3.4。 (942e413)
+
+### 包含的 Git 提交
+- `4e50d41` feat(proxy): implement meta.json handling for related artifact downloads
+- `2226291` enhance 404 response
+- `6f1dc7e` feat(proxy): add support for passthrough configuration in HTTPS proxy
+- `2446d7c` ignore
+- `942e413` prepare 1.3.4
+
 ## [1.3.3]
 
 ### 新增

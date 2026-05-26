@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.4] - 2026-05-26
+
+### Added
+- Implement meta.json handling for related artifact downloads. (4e50d41)
+- Add support for passthrough configuration in HTTPS proxy. (6f1dc7e)
+
+### Changed
+- Enhance 404 response. (2226291)
+
+### Other
+- Misc: ignore. (2446d7c)
+- Chore: prepare 1.3.4. (942e413)
+
+### Git Commits Included
+- `4e50d41` feat(proxy): implement meta.json handling for related artifact downloads
+- `2226291` enhance 404 response
+- `6f1dc7e` feat(proxy): add support for passthrough configuration in HTTPS proxy
+- `2446d7c` ignore
+- `942e413` prepare 1.3.4
+
 ## [1.3.3]
 
 ### Added
