@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.6]
+
+set Host header to download target when using meta.originalUrl
+
 ## [1.3.4] - 2026-05-26
 
 ### Added
