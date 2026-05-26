@@ -6,6 +6,20 @@
 
 修复使用meta.json时的header错误
 
+## [1.3.7] - 2026-05-26
+
+### 变更
+- 为 `MULTI_THREAD_MIN_SIZE_MB` 和 `MAVEN_NEGATIVE_EVENT_MAX_MB` 增加对带单位的大小值支持（支持 `K/M/G/T`，例如 `1M`、`512K`）。
+- 提取公共工具：`parseSizeToBytes` -> `src/common/size-utils.js`，`parseDurationToMs` 与 `formatBytes` -> `src/common/format-utils.js`，并更新调用方以复用实现。
+- 更新 CLI 生成的默认配置模板与 `config.properties`，在对应项中使用带单位的默认值与示例说明。
+- 更新 `README.md` 与 `README-zh.md`，在环境变量参考中记录单位支持。
+
+### 新增
+- 为尺寸与格式工具添加单元测试（`test/size-utils.unit.test.js`, `test/format-utils.unit.test.js`）。
+
+### 其他
+- 精简并消除配置与缓存清理模块中的重复实现。
+
 ## [1.3.4] - 2026-05-26
 
 ### 新增

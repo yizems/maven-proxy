@@ -6,6 +6,20 @@ All notable changes to this project are documented in this file.
 
 set Host header to download target when using meta.originalUrl
 
+## [1.3.7] - 2026-05-26
+
+### Changed
+- Support unit-style size values for `MULTI_THREAD_MIN_SIZE_MB` and `MAVEN_NEGATIVE_EVENT_MAX_MB` (accepts `K/M/G/T`, e.g. `1M`, `512K`).
+- Extract common helpers: `parseSizeToBytes` -> `src/common/size-utils.js`, `parseDurationToMs` and `formatBytes` -> `src/common/format-utils.js` and update callers.
+- Update generated CLI config template and default `config.properties` to use unit-style defaults and examples.
+- Update `README.md` and `README-zh.md` to document unit support for the above environment variables.
+
+### Added
+- Unit tests for size and format utilities (`test/size-utils.unit.test.js`, `test/format-utils.unit.test.js`).
+
+### Other
+- Minor refactor and duplication removal across config and cache cleanup code.
+
 ## [1.3.4] - 2026-05-26
 
 ### Added
