@@ -201,6 +201,7 @@ export function createHttpRequestHandler({
       cachePath = getCacheFilePath(config.cacheDir, urlObj, {
         ecosystem,
         includeHost: ecosystem !== "maven" || config.mavenCacheUseDomainDir,
+        mavenCacheIgnorePathPrefixRules: config.mavenCacheIgnorePathPrefixRules,
       });
 
       if (ecosystem === "maven" && mavenAffinityIndex?.enabled) {

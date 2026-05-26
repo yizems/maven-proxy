@@ -276,6 +276,7 @@ Environment variables:
 - NPM_REGISTRY_DOMAINS: npm domains for ecosystem routing (wildcards supported).
 - MAVEN_REPO_DOMAINS: maven domains for ecosystem routing (wildcards supported).
 - MAVEN_CACHE_USE_DOMAIN_DIR: whether Maven cache uses hostname as the first-level directory. Default false.
+- MAVEN_CACHE_IGNORE_PATH_PREFIXES: Maven cache path-prefix ignore rules (comma-separated, supports host/path and host:port/path). Default: repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven.
 - HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION: log retention duration (supports s/m/h/d), for example 7d.
@@ -327,6 +328,7 @@ Priority:
 - `NPM_REGISTRY_DOMAINS`: Domains treated as npm ecosystem for cache routing (wildcards supported).
 - `MAVEN_REPO_DOMAINS`: Domains treated as Maven ecosystem for cache routing (wildcards supported).
 - `MAVEN_CACHE_USE_DOMAIN_DIR`: Whether Maven cache uses hostname as the first-level directory. Default `false`.
+- `MAVEN_CACHE_IGNORE_PATH_PREFIXES`: Maven cache path-prefix ignore rules (comma-separated, supports `host/path` and `host:port/path`). Default `repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven`.
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
 - `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (MB).

@@ -180,6 +180,7 @@ function getDefaultConfigTemplate() {
   appendEntry("NPM_REGISTRY_DOMAINS", "registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com", "识别为 npm 生态并分流缓存的域名列表（支持通配符）。", "Domains recognized as npm ecosystem for cache routing (wildcard supported).");
   appendEntry("MAVEN_REPO_DOMAINS", "repo1.maven.org,repo.maven.apache.org,jitpack.io,plugins.gradle.org,dl.google.com", "识别为 Maven 生态并分流缓存的域名列表（支持通配符）。", "Domains recognized as Maven ecosystem for cache routing (wildcard supported).");
   appendEntry("MAVEN_CACHE_USE_DOMAIN_DIR", "false", "Maven 缓存是否按域名作为一级目录，默认 false。", "Whether Maven cache uses hostname as the first-level directory. Default: false.");
+  appendEntry("MAVEN_CACHE_IGNORE_PATH_PREFIXES", "repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven", "Maven 缓存应忽略的路径前缀规则（逗号分隔，支持 host/path 与 host:port/path）。", "Maven cache path-prefix ignore rules (comma-separated, supports host/path and host:port/path).");
   appendEntry("MULTI_THREAD_DOMAINS", "repo1.maven.org", "启用多线程下载的域名列表（支持通配符）。", "Domains that enable multi-thread download (wildcard supported).");
   appendEntry("MULTI_THREAD_COUNT", "8", "多线程下载线程数，默认 8。", "Thread count for multi-thread download. Default: 8.");
   appendEntry("MULTI_THREAD_MIN_SIZE_MB", "1", "触发多线程下载的最小文件大小阈值（MB），默认 1。", "Minimum file size threshold in MB to trigger multi-thread download. Default: 1.");

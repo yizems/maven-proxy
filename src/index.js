@@ -121,6 +121,7 @@ async function main() {
   startupInfo(`[maven-proxy] cache dir : ${config.cacheDir}`);
   startupInfo(`[maven-proxy] cache maven: ${config.mavenCacheDir}`);
   startupInfo(`[maven-proxy] maven cache use domain dir: ${config.mavenCacheUseDomainDir}`);
+  startupInfo(`[maven-proxy] maven cache ignore path prefixes: ${config.mavenCacheIgnorePathPrefixes || "(none)"}`);
   startupInfo(`[maven-proxy] cache npm  : ${config.npmCacheDir}`);
   startupInfo(`[maven-proxy] cache other: ${config.genericCacheDir}`);
   startupInfo(`[maven-proxy] log dir: ${config.downloadLogDir}`);

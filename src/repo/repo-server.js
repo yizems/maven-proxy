@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
+import {
+  buildMavenHostlessPathCandidates,
+  stripMavenIgnoredPathPrefix,
+} from "../cache/cache-path.js";
 
 function safeJoin(baseDir, requestPath) {
   const pathname = decodeURIComponent(requestPath || "/");
@@ -37,14 +41,32 @@ function buildDomainScopedPath(mavenCacheDir, hostname, relativePath) {
   return safeJoin(path.join(mavenCacheDir, hostDir), relativePath);
 }
 
+function normalizeRelativePathForHost(relativePath, hostname, rules = []) {
+  const inputPath = `/${String(relativePath || "").replace(/^\/+/, "")}`;
+  const normalized = stripMavenIgnoredPathPrefix(
+    inputPath,
+    { protocol: "https:", hostname, port: "" },
+    rules,
+  );
+  return normalized.replace(/^\/+/, "");
+}
+
+function normalizeRelativePathCandidates(relativePath, rules = []) {
+  const inputPath = `/${String(relativePath || "").replace(/^\/+/, "")}`;
+  const candidates = buildMavenHostlessPathCandidates(inputPath, rules);
+  return candidates.map((item) => item.replace(/^\/+/, ""));
+}
+
 function buildDefaultRepoFilePath(config, relativePath) {
   if (!config.mavenCacheUseDomainDir) {
-    return safeJoin(config.mavenCacheDir, relativePath);
+    const candidates = normalizeRelativePathCandidates(relativePath, config.mavenCacheIgnorePathPrefixRules);
+    return safeJoin(config.mavenCacheDir, candidates[0] || relativePath);
   }
 
   const hosts = collectRepoHosts(config.repoFallbackRepos || []);
   const host = hosts[0] || "unknown";
-  return buildDomainScopedPath(config.mavenCacheDir, host, relativePath);
+  const normalized = normalizeRelativePathForHost(relativePath, host, config.mavenCacheIgnorePathPrefixRules);
+  return buildDomainScopedPath(config.mavenCacheDir, host, normalized || relativePath);
 }
 
 async function statIfExists(filePath) {
@@ -59,10 +81,20 @@ async function statIfExists(filePath) {
 }
 
 async function findCachedMavenFile(config, relativePath) {
+  const ignoreRules = config.mavenCacheIgnorePathPrefixRules || [];
+
   if (!config.mavenCacheUseDomainDir) {
-    const filePath = safeJoin(config.mavenCacheDir, relativePath);
-    const stats = await statIfExists(filePath);
-    return { filePath, stats };
+    const candidates = normalizeRelativePathCandidates(relativePath, ignoreRules);
+    for (const candidate of candidates) {
+      const filePath = safeJoin(config.mavenCacheDir, candidate);
+      const stats = await statIfExists(filePath);
+      if (stats && stats.isFile()) {
+        return { filePath, stats };
+      }
+    }
+
+    const fallbackPath = safeJoin(config.mavenCacheDir, candidates[0] || relativePath);
+    return { filePath: fallbackPath, stats: null };
   }
 
   const checkedHosts = new Set();
@@ -70,7 +102,8 @@ async function findCachedMavenFile(config, relativePath) {
 
   for (const host of preferredHosts) {
     checkedHosts.add(host);
-    const filePath = buildDomainScopedPath(config.mavenCacheDir, host, relativePath);
+    const normalized = normalizeRelativePathForHost(relativePath, host, ignoreRules);
+    const filePath = buildDomainScopedPath(config.mavenCacheDir, host, normalized || relativePath);
     const stats = await statIfExists(filePath);
     if (stats && stats.isFile()) {
       return { filePath, stats };
@@ -95,7 +128,8 @@ async function findCachedMavenFile(config, relativePath) {
       continue;
     }
 
-    const filePath = safeJoin(path.join(config.mavenCacheDir, entry.name), relativePath);
+    const normalized = normalizeRelativePathForHost(relativePath, entry.name, ignoreRules);
+    const filePath = safeJoin(path.join(config.mavenCacheDir, entry.name), normalized || relativePath);
     const stats = await statIfExists(filePath);
     if (stats && stats.isFile()) {
       return { filePath, stats };
@@ -138,15 +172,22 @@ async function ensureFromRemoteRepos(config, downloader, relativePath, cacheClea
   let hasNon404Error = false;
   let lastError = null;
   const candidatePaths = buildCandidateRelativePaths(relativePath);
+  const ignoreRules = config.mavenCacheIgnorePathPrefixRules || [];
 
   for (const repoBase of repos) {
     for (const candidatePath of candidatePaths) {
       const remoteUrl = buildRemoteUrl(repoBase, candidatePath);
 
       try {
+        const normalizedRelativePath = normalizeRelativePathForHost(
+          relativePath,
+          remoteUrl.hostname,
+          ignoreRules,
+        ) || relativePath;
+
         const targetPath = config.mavenCacheUseDomainDir
-          ? buildDomainScopedPath(config.mavenCacheDir, remoteUrl.hostname, relativePath)
-          : safeJoin(config.mavenCacheDir, relativePath);
+          ? buildDomainScopedPath(config.mavenCacheDir, remoteUrl.hostname, normalizedRelativePath)
+          : safeJoin(config.mavenCacheDir, normalizedRelativePath);
 
         if (cacheCleanupManager) {
           await cacheCleanupManager.checkAndCleanupIfNeeded("repo-cache-miss");

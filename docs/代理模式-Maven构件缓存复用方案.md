@@ -108,6 +108,7 @@ data/cache/maven/
 - `CACHE_DIR`: 缓存根目录（Maven 缓存位于 `CACHE_DIR/maven/{domain}/...`）。
 - `MAVEN_REPO_DOMAINS`: Maven 域名识别列表。
 - `MAVEN_CACHE_USE_DOMAIN_DIR`: Maven 缓存是否按域名作为一级目录，默认 `false`。
+- `MAVEN_CACHE_IGNORE_PATH_PREFIXES`: Maven 缓存应忽略的路径前缀规则（逗号分隔，支持 `host/path` 与 `host:port/path`）。默认：`repo1.maven.org/maven2,repo.maven.apache.org/maven2,jitpack.io/,plugins.gradle.org/m2,dl.google.com/dl/android/maven2,dl.google.com/dl/google/maven`。
 - `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`），默认 `24h`。
 
 索引持久化配置（命名可在实现阶段最终确定）：

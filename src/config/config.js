@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import dotenv from "dotenv";
 import { detectJavaHome } from "../common/java-home.js";
+import { parseMavenCacheIgnorePathPrefixes } from "../cache/cache-path.js";
 
 const cwd = process.cwd();
 const userConfigDir = path.resolve(os.homedir(), "maven-proxy");
@@ -196,10 +197,23 @@ const defaultRepoFallbackRepos = [
   "https://dl.google.com",
 ];
 
+const defaultMavenCacheIgnorePathPrefixes = [
+  "repo1.maven.org/maven2",
+  "repo.maven.apache.org/maven2",
+  "jitpack.io/",
+  "plugins.gradle.org/m2",
+  "dl.google.com/dl/android/maven2",
+  "dl.google.com/dl/google/maven",
+];
+
 const repoFallbackRepos = normalizeRepoList(
   process.env.REPO_FALLBACK_REPOS,
   defaultRepoFallbackRepos,
 );
+
+const mavenCacheIgnorePathPrefixes = String(process.env.MAVEN_CACHE_IGNORE_PATH_PREFIXES || "").trim()
+  || defaultMavenCacheIgnorePathPrefixes.join(",");
+const mavenCacheIgnorePathPrefixRules = parseMavenCacheIgnorePathPrefixes(mavenCacheIgnorePathPrefixes);
 
 const defaultMavenRepoDomains = [
   "repo1.maven.org",
@@ -242,6 +256,8 @@ export const config = {
   npmRegistryDomains: toList(process.env.NPM_REGISTRY_DOMAINS, ["registry.npmjs.org", "registry.npmmirror.com", "npm.pkg.github.com"]),
   mavenRepoDomains: toList(process.env.MAVEN_REPO_DOMAINS, [...new Set(defaultMavenRepoDomains)]),
   mavenCacheUseDomainDir: toBool(process.env.MAVEN_CACHE_USE_DOMAIN_DIR, false),
+  mavenCacheIgnorePathPrefixes,
+  mavenCacheIgnorePathPrefixRules,
   multiThreadDomains: toList(process.env.MULTI_THREAD_DOMAINS, ["repo1.maven.org"]),
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes,
