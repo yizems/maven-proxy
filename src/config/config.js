@@ -241,6 +241,7 @@ export const config = {
   httpsMitmDomains: toList(process.env.HTTPS_MITM_DOMAINS, ["repo1.maven.org", "repo.maven.apache.org", "registry.npmjs.org"]),
   npmRegistryDomains: toList(process.env.NPM_REGISTRY_DOMAINS, ["registry.npmjs.org", "registry.npmmirror.com", "npm.pkg.github.com"]),
   mavenRepoDomains: toList(process.env.MAVEN_REPO_DOMAINS, [...new Set(defaultMavenRepoDomains)]),
+  mavenCacheUseDomainDir: toBool(process.env.MAVEN_CACHE_USE_DOMAIN_DIR, false),
   multiThreadDomains: toList(process.env.MULTI_THREAD_DOMAINS, ["repo1.maven.org"]),
   multiThreadCount: Math.max(1, toInt(process.env.MULTI_THREAD_COUNT, 4)),
   multiThreadMinSizeBytes,

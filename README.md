@@ -275,6 +275,7 @@ Environment variables:
 - REPO_FALLBACK_REPOS: repository fallback list.
 - NPM_REGISTRY_DOMAINS: npm domains for ecosystem routing (wildcards supported).
 - MAVEN_REPO_DOMAINS: maven domains for ecosystem routing (wildcards supported).
+- MAVEN_CACHE_USE_DOMAIN_DIR: whether Maven cache uses hostname as the first-level directory. Default false.
 - HTTPS_MITM_DOMAINS: MITM domain list (includes registry.npmjs.org by default, wildcards supported).
 - DOWNLOAD_LOG_DIR: log directory.
 - LOG_RETENTION: log retention duration (supports s/m/h/d), for example 7d.
@@ -325,6 +326,7 @@ Priority:
 - `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: Whether unmatched HTTPS domains are tunneled directly. Default `false`.
 - `NPM_REGISTRY_DOMAINS`: Domains treated as npm ecosystem for cache routing (wildcards supported).
 - `MAVEN_REPO_DOMAINS`: Domains treated as Maven ecosystem for cache routing (wildcards supported).
+- `MAVEN_CACHE_USE_DOMAIN_DIR`: Whether Maven cache uses hostname as the first-level directory. Default `false`.
 - `MULTI_THREAD_DOMAINS`: Domains allowed to use multi-thread download (wildcards supported).
 - `MULTI_THREAD_COUNT`: Number of download threads for ranged downloads.
 - `MULTI_THREAD_MIN_SIZE_MB`: Minimum size threshold to trigger multi-thread download (MB).

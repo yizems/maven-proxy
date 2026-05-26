@@ -200,7 +200,7 @@ export function createHttpRequestHandler({
       ecosystem = detectPackageEcosystem(urlObj, config, matchesDomain);
       cachePath = getCacheFilePath(config.cacheDir, urlObj, {
         ecosystem,
-        includeHost: ecosystem !== "maven",
+        includeHost: ecosystem !== "maven" || config.mavenCacheUseDomainDir,
       });
 
       if (ecosystem === "maven" && mavenAffinityIndex?.enabled) {
@@ -220,7 +220,9 @@ export function createHttpRequestHandler({
     }
 
     if (canonical && mavenAffinityIndex) {
-      if (isPositiveAffinityEligible(canonical.fileName)) {
+      const canUsePositiveAffinity = !config.mavenCacheUseDomainDir && isPositiveAffinityEligible(canonical.fileName);
+
+      if (canUsePositiveAffinity) {
         const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
         if (preferredPath) {
           console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
@@ -244,7 +246,12 @@ export function createHttpRequestHandler({
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
 
-      if (canonical && mavenAffinityIndex && isPositiveAffinityEligible(canonical.fileName)) {
+      if (
+        canonical &&
+        mavenAffinityIndex &&
+        !config.mavenCacheUseDomainDir &&
+        isPositiveAffinityEligible(canonical.fileName)
+      ) {
         mavenAffinityIndex.recordSuccess({
           canonicalKey: canonical.canonicalKey,
           host: urlObj.hostname,

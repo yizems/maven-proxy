@@ -260,6 +260,7 @@ npm start
 - `REPO_FALLBACK_REPOS`: 仓库端口回源地址列表（逗号分隔），默认：Maven Central、JitPack、Gradle Plugin Portal、Google Maven。
 - `NPM_REGISTRY_DOMAINS`: npm 域名识别列表（用于缓存分流，支持通配符），默认：`registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com`。
 - `MAVEN_REPO_DOMAINS`: Maven 域名识别列表（用于缓存分流，支持通配符），默认包含 Maven Central、JitPack、Gradle Plugin、Google Maven。
+- `MAVEN_CACHE_USE_DOMAIN_DIR`: Maven 缓存是否按域名作为一级目录，默认 `false`。
 - `HTTPS_MITM_DOMAINS`: 默认已包含 `registry.npmjs.org`，可按需追加 npm 私有域名（支持通配符）。
 - `DOWNLOAD_LOG_DIR`: 日志目录，默认 `data/logs/downloads`；统一主日志与错误日志都在该目录。
 - `LOG_RETENTION`: 日志保留时长（支持 `s/m/h/d`），默认 `7d`，超过该时长的历史日志会自动清理。
@@ -312,6 +313,7 @@ npm start
 - `HTTPS_PASSTHROUGH_FOR_UNMATCHED`: 未命中 MITM 域名时是否允许直连隧道透传。默认 `false`。
 - `NPM_REGISTRY_DOMAINS`: 识别为 npm 生态并分流缓存的域名列表（支持通配符）。
 - `MAVEN_REPO_DOMAINS`: 识别为 Maven 生态并分流缓存的域名列表（支持通配符）。
+- `MAVEN_CACHE_USE_DOMAIN_DIR`: Maven 缓存是否按域名作为一级目录。默认 `false`。
 - `MULTI_THREAD_DOMAINS`: 启用多线程下载的域名列表（支持通配符）。
 - `MULTI_THREAD_COUNT`: 多线程下载线程数。
 - `MULTI_THREAD_MIN_SIZE_MB`: 触发多线程下载的最小文件大小阈值（MB）。
