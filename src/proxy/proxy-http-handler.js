@@ -275,8 +275,45 @@ export function createHttpRequestHandler({
       if (cacheCleanupManager) {
         await cacheCleanupManager.checkAndCleanupIfNeeded("cache-miss");
       }
-      await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
-      await downloader.ensureCached(urlObj, cachePath, req.headers);
+
+      const dirPath = path.dirname(cachePath);
+      let downloadUrlObj = urlObj;
+
+      // If this is a Maven artifact and a meta.json exists in the same directory,
+      // prefer to use the original upstream URL recorded in meta.json and replace
+      // only the filename part. This ensures we fetch related files from the same
+      // upstream mirror instead of trusting the client's provided host/path.
+      try {
+        if (ecosystem === "maven") {
+          const metaPath = path.join(dirPath, "meta.json");
+          const metaStat = await statIfFile(metaPath);
+          if (metaStat) {
+            try {
+              const text = await fs.promises.readFile(metaPath, "utf8");
+              const meta = JSON.parse(text || "{}");
+              if (meta && meta.originalUrl) {
+                try {
+                  const metaUrl = new URL(meta.originalUrl);
+                  const requestedBase = path.posix.basename(urlObj.pathname || "");
+                  const metaDir = path.posix.dirname(metaUrl.pathname || "/");
+                  metaUrl.pathname = metaDir === "/" ? `/${requestedBase}` : `${metaDir}/${requestedBase}`;
+                  downloadUrlObj = metaUrl;
+                  console.log(`[proxy] using meta originalUrl for download host=${metaUrl.hostname} path=${metaUrl.pathname}`);
+                } catch (err) {
+                  // ignore invalid meta.originalUrl
+                }
+              }
+            } catch (err) {
+              // ignore read/parse errors
+            }
+          }
+        }
+      } catch (err) {
+        // ignore any unexpected errors here and fall back to client URL
+      }
+
+      await fs.promises.mkdir(dirPath, { recursive: true });
+      await downloader.ensureCached(downloadUrlObj, cachePath, req.headers);
 
       if (canonical && mavenAffinityIndex) {
         try {

@@ -395,6 +395,24 @@ export class Downloader {
         size: finalStats.size,
         elapsedMs: Date.now() - startedAt,
       });
+
+      // Write a meta.json in the file's directory recording the original download URL.
+      // This helps serve related files (e.g., use the same upstream mirror to fetch .jar when .pom exists).
+      try {
+        const meta = {
+          originalUrl: typeof downloadUrl === "string" ? downloadUrl : downloadUrl?.href,
+          timestamp: new Date().toISOString(),
+        };
+        const metaPath = path.join(path.dirname(finalPath), "meta.json");
+        const tmpMetaPath = `${metaPath}.tmp`;
+        await fs.promises.writeFile(tmpMetaPath, JSON.stringify(meta), "utf8");
+        await fs.promises.rename(tmpMetaPath, metaPath);
+      } catch (err) {
+        this.logDownload("meta write failed", downloadUrl, {
+          targetDir: path.dirname(finalPath),
+          message: err?.message || String(err),
+        });
+      }
     } catch (error) {
       if (isLocalFsWriteError(error)) {
         if (!error.statusCode) {
