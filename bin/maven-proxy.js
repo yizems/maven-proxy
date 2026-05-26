@@ -140,63 +140,79 @@ function resolvePath(inputPath) {
 }
 
 function getDefaultConfigTemplate() {
-  return [
+  const lines = [
     "# Maven Proxy default user config",
+    "# Maven Proxy 用户模式默认配置",
     "# This file is loaded by default in user mode.",
     "",
-    "PROXY_PORT=8080",
-    "REPO_PORT=8081",
-    "CACHE_DIR=data/cache",
-    "CACHE_CLEANUP_ENABLED=true",
-    "CACHE_CLEANUP_DAILY_AT=03:00",
-    "CACHE_CLEANUP_CHECK_MIN_INTERVAL=10m",
-    "CACHE_TOUCH_ON_HIT=true",
-    "CACHE_TOUCH_MIN_INTERVAL=1d",
-    "CACHE_RETENTION_START=10d",
-    "CACHE_RETENTION_MIN=1d",
-    "CACHE_DISK_FREE_TRIGGER=20G",
-    "CACHE_DISK_FREE_TARGET=25G",
-    "CACHE_MAX_SIZE=",
-    "CACHE_TARGET_SIZE=",
-    "REPO_FALLBACK_REPOS=https://repo1.maven.org/maven2,https://jitpack.io,https://plugins.gradle.org/m2,https://maven.google.com",
-    "ENABLE_HTTPS_PROXY=true",
-    "HTTPS_MITM_DOMAINS=repo1.maven.org,repo.maven.apache.org,registry.npmjs.org",
-    "HTTPS_PASSTHROUGH_FOR_UNMATCHED=false",
-    "NPM_REGISTRY_DOMAINS=registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com",
-    "MAVEN_REPO_DOMAINS=repo1.maven.org,repo.maven.apache.org,jitpack.io,plugins.gradle.org,maven.google.com",
-    "MULTI_THREAD_DOMAINS=repo1.maven.org",
-    "MULTI_THREAD_COUNT=8",
-    "MULTI_THREAD_MIN_SIZE_MB=1",
-    "DOWNLOAD_TIMEOUT=60s",
-    "OUTBOUND_KEEP_ALIVE=true",
-    "OUTBOUND_KEEP_ALIVE_INTERVAL=1s",
-    "OUTBOUND_MAX_SOCKETS=64",
-    "OUTBOUND_MAX_FREE_SOCKETS=16",
-    "MAVEN_AFFINITY_ENABLED=true",
-    "MAVEN_AFFINITY_INDEX_DIR=data/index",
-    "MAVEN_NEGATIVE_CACHE_TTL=24h",
-    "MAVEN_AFFINITY_FLUSH_INTERVAL=5s",
-    "MAVEN_AFFINITY_EVENT_MAX_MB=8",
-    "DOWNLOAD_LOG_DIR=data/logs/downloads",
-    "LOG_RETENTION=7d",
-    "LOG_TO_STDOUT=false",
-    "UPSTREAM_PROXY_URL=",
-    "UPSTREAM_HTTP_PROXY_URL=",
-    "UPSTREAM_HTTPS_PROXY_URL=",
-    "UPSTREAM_NO_PROXY=127.0.0.1,localhost",
-    "UPSTREAM_IGNORE_DOMAINS=",
-    "CERT_DIR=data/certs",
-    "ROOT_CERT_PATH=data/certs/root-ca.crt",
-    "ROOT_KEY_PATH=data/certs/root-ca.key.pem",
-    "LEAF_CERT_DIR=data/certs/leaf",
-    "TRUST_STORE_PATH=data/certs/proxy-truststore.jks",
-    "TRUST_STORE_ALIAS=maven-proxy-root-ca",
-    "TRUST_STORE_PASSWORD=changeit",
-    "EXISTING_TRUST_STORE_PATH=",
-    "EXISTING_TRUST_STORE_PASSWORD=",
-    "JAVA_HOME=",
-    "",
-  ].join("\n");
+  ];
+
+  const appendEntry = (key, value, zhComment, enComment) => {
+    lines.push(`# 中文: ${zhComment}`);
+    lines.push(`# English: ${enComment}`);
+    lines.push(`${key}=${value}`);
+    lines.push("");
+  };
+
+  appendEntry("PROXY_PORT", "8080", "代理服务端口，默认 8080。", "Proxy service port. Default: 8080.");
+  appendEntry("REPO_PORT", "8081", "本地仓库服务端口，默认 8081。", "Local repository service port. Default: 8081.");
+  appendEntry("CACHE_DIR", "data/cache", "缓存根目录，默认 data/cache。", "Cache root directory. Default: data/cache.");
+  appendEntry("CACHE_CLEANUP_ENABLED", "true", "是否启用自动缓存清理，默认 true。", "Enable automatic cache cleanup. Default: true.");
+  appendEntry("CACHE_CLEANUP_DAILY_AT", "03:00", "每日固定检查时间（本地时区，HH:mm），默认 03:00。", "Fixed daily check time in local timezone (HH:mm). Default: 03:00.");
+  appendEntry("CACHE_CLEANUP_CHECK_MIN_INTERVAL", "10m", "压力检测最小间隔（支持 s/m/h/d），默认 10m。", "Minimum interval for pressure checks (supports s/m/h/d). Default: 10m.");
+  appendEntry("CACHE_TOUCH_ON_HIT", "true", "缓存命中返回时是否更新文件 mtime，默认 true。", "Update file mtime when serving cache hit. Default: true.");
+  appendEntry("CACHE_TOUCH_MIN_INTERVAL", "1d", "同一文件两次 touch 最小间隔（支持 s/m/h/d），默认 1d。", "Minimum interval between touches for the same file (supports s/m/h/d). Default: 1d.");
+  appendEntry("CACHE_RETENTION_START", "10d", "清理轮次初始保留窗口（支持 s/m/h/d），默认 10d。", "Initial retention window for cleanup cycle (supports s/m/h/d). Default: 10d.");
+  appendEntry("CACHE_RETENTION_MIN", "1d", "清理轮次最小保留窗口（支持 s/m/h/d），默认 1d。", "Minimum retention window for cleanup cycle (supports s/m/h/d). Default: 1d.");
+  appendEntry("CACHE_DISK_FREE_TRIGGER", "20G", "磁盘剩余空间低于该值触发清理（支持 K/M/G/T），默认 20G。", "Trigger cleanup when free disk space is below this value (supports K/M/G/T). Default: 20G.");
+  appendEntry("CACHE_DISK_FREE_TARGET", "25G", "磁盘剩余空间恢复到该值可停止清理（支持 K/M/G/T），默认 25G。", "Stop cleanup when free disk space recovers to this value (supports K/M/G/T). Default: 25G.");
+  appendEntry("CACHE_MAX_SIZE", "", "可选：缓存总大小触发阈值（支持 K/M/G/T），默认空（禁用）。", "Optional: cache total size trigger threshold (supports K/M/G/T). Default: empty (disabled).");
+  appendEntry("CACHE_TARGET_SIZE", "", "可选：缓存总大小回落目标（支持 K/M/G/T），默认空（禁用）。", "Optional: cache size recovery target (supports K/M/G/T). Default: empty (disabled).");
+  appendEntry(
+    "REPO_FALLBACK_REPOS",
+    "https://repo1.maven.org/maven2,https://jitpack.io,https://plugins.gradle.org/m2,https://dl.google.com",
+    "缓存未命中时回源仓库列表（逗号分隔）。",
+    "Fallback repository list when cache misses (comma-separated).",
+  );
+  appendEntry("ENABLE_HTTPS_PROXY", "true", "是否启用 HTTPS 代理处理（true/false），默认 true。", "Enable HTTPS proxy handling (true/false). Default: true.");
+  appendEntry("HTTPS_MITM_DOMAINS", "repo1.maven.org,repo.maven.apache.org,registry.npmjs.org", "执行 MITM 证书签发的域名列表（逗号分隔，支持通配符）。", "Domains for MITM certificate issuance (comma-separated, wildcard supported).");
+  appendEntry("HTTPS_PASSTHROUGH_FOR_UNMATCHED", "false", "未命中 MITM 域名时是否允许隧道透传，默认 false。", "Allow tunnel passthrough for unmatched MITM domains. Default: false.");
+  appendEntry("NPM_REGISTRY_DOMAINS", "registry.npmjs.org,registry.npmmirror.com,npm.pkg.github.com", "识别为 npm 生态并分流缓存的域名列表（支持通配符）。", "Domains recognized as npm ecosystem for cache routing (wildcard supported).");
+  appendEntry("MAVEN_REPO_DOMAINS", "repo1.maven.org,repo.maven.apache.org,jitpack.io,plugins.gradle.org,dl.google.com", "识别为 Maven 生态并分流缓存的域名列表（支持通配符）。", "Domains recognized as Maven ecosystem for cache routing (wildcard supported).");
+  appendEntry("MULTI_THREAD_DOMAINS", "repo1.maven.org", "启用多线程下载的域名列表（支持通配符）。", "Domains that enable multi-thread download (wildcard supported).");
+  appendEntry("MULTI_THREAD_COUNT", "8", "多线程下载线程数，默认 8。", "Thread count for multi-thread download. Default: 8.");
+  appendEntry("MULTI_THREAD_MIN_SIZE_MB", "1", "触发多线程下载的最小文件大小阈值（MB），默认 1。", "Minimum file size threshold in MB to trigger multi-thread download. Default: 1.");
+  appendEntry("DOWNLOAD_TIMEOUT", "60s", "上游请求超时时间（支持 s/m/h/d），默认 60s。", "Upstream request timeout (supports s/m/h/d). Default: 60s.");
+  appendEntry("DOWNLOAD_LOG_DIR", "data/logs/downloads", "统一主日志与错误日志目录。", "Unified main and error log directory.");
+  appendEntry("LOG_RETENTION", "7d", "日志保留时长（支持 s/m/h/d），默认 7d。", "Log retention duration (supports s/m/h/d). Default: 7d.");
+  appendEntry("LOG_TO_STDOUT", "false", "是否输出运行期日志到命令行，默认 false。", "Output runtime logs to stdout. Default: false.");
+  appendEntry("LOG_CONNECT_EVENTS", "false", "是否输出详细 CONNECT/MITM 握手日志，默认 false。", "Output detailed CONNECT/MITM handshake logs. Default: false.");
+  appendEntry("OUTBOUND_KEEP_ALIVE", "true", "是否启用出站 keep-alive 连接复用池，默认 true。", "Enable outbound keep-alive connection pool. Default: true.");
+  appendEntry("OUTBOUND_KEEP_ALIVE_INTERVAL", "1s", "keep-alive 间隔（支持 s/m/h/d），默认 1s。", "Keep-alive interval (supports s/m/h/d). Default: 1s.");
+  appendEntry("OUTBOUND_MAX_SOCKETS", "64", "每个源站最大出站连接数，默认 64。", "Maximum outbound sockets per upstream host. Default: 64.");
+  appendEntry("OUTBOUND_MAX_FREE_SOCKETS", "16", "每个源站可保留空闲连接上限，默认 16。", "Maximum free outbound sockets kept per upstream host. Default: 16.");
+  appendEntry("MAVEN_AFFINITY_ENABLED", "true", "是否启用 Maven affinity 缓存索引，默认 true。", "Enable Maven affinity index. Default: true.");
+  appendEntry("MAVEN_AFFINITY_INDEX_DIR", "data/index", "Maven affinity 索引目录，默认 data/index。", "Maven affinity index directory. Default: data/index.");
+  appendEntry("MAVEN_NEGATIVE_CACHE_TTL", "24h", "负缓存 TTL（支持 s/m/h/d），默认 24h。", "Negative cache TTL (supports s/m/h/d). Default: 24h.");
+  appendEntry("MAVEN_AFFINITY_FLUSH_INTERVAL", "5s", "affinity 事件日志 flush 周期（支持 s/m/h/d），默认 5s。", "Affinity event log flush interval (supports s/m/h/d). Default: 5s.");
+  appendEntry("MAVEN_AFFINITY_EVENT_MAX_MB", "8", "affinity 事件日志压缩阈值（MB），默认 8。", "Affinity event log compaction threshold in MB. Default: 8.");
+  appendEntry("UPSTREAM_PROXY_URL", "", "通用上级代理地址（HTTP/HTTPS 兜底）。", "Generic upstream proxy URL fallback for HTTP/HTTPS.");
+  appendEntry("UPSTREAM_HTTP_PROXY_URL", "", "HTTP 请求使用的上级代理地址。", "Upstream proxy URL for HTTP requests.");
+  appendEntry("UPSTREAM_HTTPS_PROXY_URL", "", "HTTPS 请求使用的上级代理地址。", "Upstream proxy URL for HTTPS requests.");
+  appendEntry("UPSTREAM_NO_PROXY", "127.0.0.1,localhost", "不走上级代理的域名列表（逗号分隔，支持通配符，* 表示全部直连）。", "Domains that bypass upstream proxy (comma-separated, wildcard supported, * means direct for all).");
+  appendEntry("UPSTREAM_IGNORE_DOMAINS", "", "额外忽略上级代理的域名列表（支持通配符）。", "Additional domains ignored by upstream proxy (wildcard supported).");
+  appendEntry("CERT_DIR", "data/certs", "证书根目录，默认 data/certs。", "Certificate root directory. Default: data/certs.");
+  appendEntry("ROOT_CERT_PATH", "data/certs/root-ca.crt", "Root CA 证书路径。", "Root CA certificate path.");
+  appendEntry("ROOT_KEY_PATH", "data/certs/root-ca.key.pem", "Root CA 私钥路径。", "Root CA private key path.");
+  appendEntry("LEAF_CERT_DIR", "data/certs/leaf", "站点叶子证书目录。", "Leaf certificate directory.");
+  appendEntry("TRUST_STORE_PATH", "data/certs/proxy-truststore.jks", "Java trust store 文件路径。", "Java trust store file path.");
+  appendEntry("TRUST_STORE_ALIAS", "maven-proxy-root-ca", "导入 Root CA 到 trust store 时使用的别名。", "Alias used to import Root CA into trust store.");
+  appendEntry("TRUST_STORE_PASSWORD", "changeit", "trust store 密码。", "Trust store password.");
+  appendEntry("EXISTING_TRUST_STORE_PATH", "", "已有 truststore 路径（可选），初始化时可作为源。", "Existing truststore path (optional), used as source during init.");
+  appendEntry("EXISTING_TRUST_STORE_PASSWORD", "", "已有 truststore 密码（可选），用于读取 EXISTING_TRUST_STORE_PATH。", "Existing truststore password (optional), used to read EXISTING_TRUST_STORE_PATH.");
+  appendEntry("JAVA_HOME", "", "Java 安装路径；为空或无效时会自动探测。", "Java installation path; auto-detected when empty or invalid.");
+
+  return `${lines.join("\n").trimEnd()}\n`;
 }
 
 async function initConfigFile(configFile, force = false) {

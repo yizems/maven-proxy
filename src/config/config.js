@@ -193,7 +193,7 @@ const defaultRepoFallbackRepos = [
   "https://repo1.maven.org/maven2",
   "https://jitpack.io",
   "https://plugins.gradle.org/m2",
-  "https://maven.google.com",
+  "https://dl.google.com",
 ];
 
 const repoFallbackRepos = normalizeRepoList(
@@ -206,7 +206,7 @@ const defaultMavenRepoDomains = [
   "repo.maven.apache.org",
   "jitpack.io",
   "plugins.gradle.org",
-  "maven.google.com",
+  "dl.google.com",
   ...extractHostsFromUrls(repoFallbackRepos),
 ];
 

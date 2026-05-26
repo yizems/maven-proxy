@@ -19,6 +19,7 @@
     "cli:start": "node bin/maven-proxy.js start --mode development",
     "cli:stop": "node bin/maven-proxy.js stop",
     "cli:doctor": "node bin/maven-proxy.js doctor --mode development",
+    "cli:doctor:user": "node bin/maven-proxy.js doctor --mode user",
     "cli:truststore:print": "node bin/maven-proxy.js truststore print --mode development",
     "cli:truststore:init": "node bin/maven-proxy.js truststore init --mode development",
     "cli:truststore:merge": "node bin/maven-proxy.js truststore merge --mode development",
