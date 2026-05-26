@@ -29,7 +29,9 @@ function isLocalFsWriteError(error) {
   }
 
   const message = String(error.message || "").toLowerCase();
-  return message.includes("enotdir") || message.includes("read-only file system");
+  return (
+    message.includes("enotdir") || message.includes("read-only file system")
+  );
 }
 
 function pickClient(protocol) {
@@ -109,12 +111,26 @@ async function statIfFile(filePath) {
 }
 
 function sendText(res, statusCode, message) {
+  if(statusCode === 404) {
+    send404(res);
+    return;
+  }
+
   res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
   res.end(message);
 }
 
+function send404(res) {
+  res.writeHead(404, {
+    "Content-Length": "0",
+  });
+  res.end();
+}
+
 function sendErrorText(res, statusCode, message, context = "proxy") {
-  console.error(`[${context}] response error status=${statusCode} message=${message}`);
+  console.error(
+    `[${context}] response error status=${statusCode} message=${message}`,
+  );
   sendText(res, statusCode, message);
 }
 
@@ -138,7 +154,7 @@ function buildUrl(req, forcedProtocol = null) {
 async function serveFile(res, req, filePath, cacheCleanupManager = null) {
   const stats = await statIfFile(filePath);
   if (!stats) {
-    sendText(res, 404, "Not Found");
+    send404(res);
     return;
   }
 
@@ -161,14 +177,24 @@ async function serveFile(res, req, filePath, cacheCleanupManager = null) {
   fs.createReadStream(filePath).pipe(res);
 }
 
-function forwardDirectRequest(req, res, urlObj, timeoutMs, upstreamProxyManager = null) {
+function forwardDirectRequest(
+  req,
+  res,
+  urlObj,
+  timeoutMs,
+  upstreamProxyManager = null,
+) {
   const client = pickClient(urlObj.protocol);
   const headers = sanitizeHeaders(req.headers);
   headers.host = urlObj.host;
-  const agent = upstreamProxyManager ? upstreamProxyManager.getAgentForUrl(urlObj) : undefined;
+  const agent = upstreamProxyManager
+    ? upstreamProxyManager.getAgentForUrl(urlObj)
+    : undefined;
 
   if (agent) {
-    console.log(`[proxy] direct forward via upstream host=${urlObj.hostname} protocol=${urlObj.protocol}`);
+    console.log(
+      `[proxy] direct forward via upstream host=${urlObj.hostname} protocol=${urlObj.protocol}`,
+    );
   }
 
   const upstreamReq = client.request(
@@ -223,7 +249,13 @@ export function createHttpRequestHandler({
 
     const method = (req.method || "GET").toUpperCase();
     if (method !== "GET" && method !== "HEAD") {
-      forwardDirectRequest(req, res, urlObj, config.downloadTimeoutMs, upstreamProxyManager);
+      forwardDirectRequest(
+        req,
+        res,
+        urlObj,
+        config.downloadTimeoutMs,
+        upstreamProxyManager,
+      );
       return;
     }
 
@@ -249,15 +281,21 @@ export function createHttpRequestHandler({
 
     const existing = await statIfFile(cachePath);
     if (existing) {
-      console.log(`[proxy] local cache hit host=${urlObj.hostname} path=${urlObj.pathname}`);
+      console.log(
+        `[proxy] local cache hit host=${urlObj.hostname} path=${urlObj.pathname}`,
+      );
       await serveFile(res, req, cachePath, cacheCleanupManager);
       return;
     }
 
     if (canonical && mavenAffinityIndex) {
-      if (mavenAffinityIndex.shouldSkipRequest(canonical.canonicalKey, urlObj)) {
-        console.log(`[proxy] negative skip canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
-        sendText(res, 404, "Not Found");
+      if (
+        mavenAffinityIndex.shouldSkipRequest(canonical.canonicalKey, urlObj)
+      ) {
+        console.log(
+          `[proxy] negative skip canonical=${canonical.canonicalKey} host=${urlObj.hostname}`,
+        );
+        send404(res);
         return;
       }
     }
@@ -265,13 +303,23 @@ export function createHttpRequestHandler({
     // If the requested resource has no file extension, do not cache it.
     // If a file without extension already exists in cache, it was handled above.
     if (!hasFileExtension(urlObj)) {
-      console.log(`[proxy] skip caching for extensionless path host=${urlObj.hostname} path=${urlObj.pathname}`);
-      forwardDirectRequest(req, res, urlObj, config.downloadTimeoutMs, upstreamProxyManager);
+      console.log(
+        `[proxy] skip caching for extensionless path host=${urlObj.hostname} path=${urlObj.pathname}`,
+      );
+      forwardDirectRequest(
+        req,
+        res,
+        urlObj,
+        config.downloadTimeoutMs,
+        upstreamProxyManager,
+      );
       return;
     }
 
     try {
-      console.log(`[proxy] local cache miss host=${urlObj.hostname} path=${urlObj.pathname}`);
+      console.log(
+        `[proxy] local cache miss host=${urlObj.hostname} path=${urlObj.pathname}`,
+      );
       if (cacheCleanupManager) {
         await cacheCleanupManager.checkAndCleanupIfNeeded("cache-miss");
       }
@@ -294,11 +342,18 @@ export function createHttpRequestHandler({
               if (meta && meta.originalUrl) {
                 try {
                   const metaUrl = new URL(meta.originalUrl);
-                  const requestedBase = path.posix.basename(urlObj.pathname || "");
+                  const requestedBase = path.posix.basename(
+                    urlObj.pathname || "",
+                  );
                   const metaDir = path.posix.dirname(metaUrl.pathname || "/");
-                  metaUrl.pathname = metaDir === "/" ? `/${requestedBase}` : `${metaDir}/${requestedBase}`;
+                  metaUrl.pathname =
+                    metaDir === "/"
+                      ? `/${requestedBase}`
+                      : `${metaDir}/${requestedBase}`;
                   downloadUrlObj = metaUrl;
-                  console.log(`[proxy] using meta originalUrl for download host=${metaUrl.hostname} path=${metaUrl.pathname}`);
+                  console.log(
+                    `[proxy] using meta originalUrl for download host=${metaUrl.hostname} path=${metaUrl.pathname}`,
+                  );
                 } catch (err) {
                   // ignore invalid meta.originalUrl
                 }
@@ -318,9 +373,14 @@ export function createHttpRequestHandler({
       if (canonical && mavenAffinityIndex) {
         try {
           // Clear any negative entry for this request scope on successful fetch.
-          mavenAffinityIndex.clearNegative({ canonicalKey: canonical.canonicalKey, urlObj });
+          mavenAffinityIndex.clearNegative({
+            canonicalKey: canonical.canonicalKey,
+            urlObj,
+          });
         } catch (err) {
-          console.error(`[proxy] clearing negative index failed: ${err?.message || err}`);
+          console.error(
+            `[proxy] clearing negative index failed: ${err?.message || err}`,
+          );
         }
       }
 
@@ -352,11 +412,14 @@ export function createHttpRequestHandler({
           });
         }
 
-        console.error(`[proxy] local cache write failed cachePath=${cachePath} code=${error.code || "UNKNOWN"} message=${error.message}`);
+        console.error(
+          `[proxy] local cache write failed cachePath=${cachePath} code=${error.code || "UNKNOWN"} message=${error.message}`,
+        );
       }
 
       const statusCode = error.statusCode || 502;
-      const label = statusCode === 500 ? "Local cache write failed" : "Download failed";
+      const label =
+        statusCode === 500 ? "Local cache write failed" : "Download failed";
       const message = `${label}: ${error.message}`;
       sendErrorText(res, statusCode, message, "proxy");
     }

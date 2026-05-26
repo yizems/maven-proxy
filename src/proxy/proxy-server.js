@@ -3,8 +3,19 @@ import { createHttpRequestHandler, createMitmHttpServer } from "./proxy-http-han
 import { attachConnectHandler } from "./proxy-connect-handler.js";
 
 function sendText(res, statusCode, message) {
+  if (statusCode === 404) {
+    send404(res);
+    return;
+  }
   res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
   res.end(message);
+}
+
+function send404(res) {
+  res.writeHead(404, {
+    "Content-Length": "0",
+  });
+  res.end();
 }
 
 function sendErrorText(res, statusCode, message) {

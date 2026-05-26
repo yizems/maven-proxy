@@ -214,6 +214,13 @@ async function ensureFromRemoteRepos(config, downloader, relativePath, cacheClea
   return { filePath: buildDefaultRepoFilePath(config, relativePath), stats: null };
 }
 
+function send404(res) {
+  res.writeHead(404, {
+    "Content-Length": "0",
+  });
+  res.end();
+}
+
 export function startRepoServer(config, downloader = null, cacheCleanupManager = null) {
   const server = http.createServer(async (req, res) => {
     try {
@@ -228,8 +235,7 @@ export function startRepoServer(config, downloader = null, cacheCleanupManager =
       }
 
       if (!stats || !stats.isFile()) {
-        res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-        res.end("Not Found");
+        send404(res);
         return;
       }
 
@@ -252,8 +258,12 @@ export function startRepoServer(config, downloader = null, cacheCleanupManager =
       const statusCode = error.statusCode && error.statusCode >= 400 ? 502 : 500;
       const message = `Repo server error: ${error.message}`;
       console.error(`[repo] response error status=${statusCode} message=${message}`);
-      res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
-      res.end(message);
+      if (error.statusCode === 404) {
+        send404(res);
+        return;
+      }
+      res.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
+      res.end();
     }
   });
 
