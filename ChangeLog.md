@@ -31,13 +31,13 @@ All notable changes to this project are documented in this file.
   - `DOWNLOAD_TIMEOUT_SECONDS`
   - `OUTBOUND_KEEP_ALIVE_SECONDS`
   - `MAVEN_NEGATIVE_CACHE_TTL_HOURS`
-  - `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`
+  - `MAVEN_NEGATIVE_FLUSH_INTERVAL_SECONDS`
   - `LOG_RETENTION_DAYS`
 - Time configuration now only accepts duration-style keys and values (`1s`, `1m`, `1h`, `1d`):
   - `DOWNLOAD_TIMEOUT` (example: `60s`)
   - `OUTBOUND_KEEP_ALIVE_INTERVAL` (example: `1s`)
   - `MAVEN_NEGATIVE_CACHE_TTL` (example: `24h`)
-  - `MAVEN_AFFINITY_FLUSH_INTERVAL` (example: `5s`)
+  - `MAVEN_NEGATIVE_FLUSH_INTERVAL` (example: `5s`)
   - `LOG_RETENTION` (example: `7d`)
 
 ### Added
@@ -87,15 +87,15 @@ All notable changes to this project are documented in this file.
   - `DOWNLOAD_TIMEOUT_MS`
   - `OUTBOUND_KEEP_ALIVE_MSECS`
   - `MAVEN_NEGATIVE_CACHE_TTL_MS`
-  - `MAVEN_AFFINITY_FLUSH_INTERVAL_MS`
-  - `MAVEN_AFFINITY_EVENT_MAX_BYTES`
+  - `MAVEN_NEGATIVE_FLUSH_INTERVAL_MS`
+  - `MAVEN_NEGATIVE_EVENT_MAX_BYTES`
 - Environment configuration now only accepts the new unit-friendly keys:
   - `MULTI_THREAD_MIN_SIZE_MB`
   - `DOWNLOAD_TIMEOUT_SECONDS`
   - `OUTBOUND_KEEP_ALIVE_SECONDS`
   - `MAVEN_NEGATIVE_CACHE_TTL_HOURS`
-  - `MAVEN_AFFINITY_FLUSH_INTERVAL_SECONDS`
-  - `MAVEN_AFFINITY_EVENT_MAX_MB`
+  - `MAVEN_NEGATIVE_FLUSH_INTERVAL_SECONDS`
+  - `MAVEN_NEGATIVE_EVENT_MAX_MB`
 - Renamed default configuration file to `config.properties`:
   - Development mode now loads project-root `config.properties`.
   - CLI user mode now uses `~/maven-proxy/config.properties`.

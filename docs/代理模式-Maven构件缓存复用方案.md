@@ -117,7 +117,7 @@ data/cache/maven/
 - `MAVEN_NEGATIVE_EVENT_MAX_MB`: negative 事件日志压缩阈值（MB）。
 
 兼容说明（迁移期可选）：
-- 若暂不调整环境变量名，可将现有 `MAVEN_AFFINITY_*` 变量语义收敛为 negative 专用。
+- 若暂不调整环境变量名，可将现有 `MAVEN_NEGATIVE_*` 变量与历史 `MAVEN_AFFINITY_*` 兼容。
 
 ## 9. 行为差异与影响
 

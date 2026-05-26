@@ -230,15 +230,16 @@ const multiThreadMinSizeBytes = Math.max(0, toInt(process.env.MULTI_THREAD_MIN_S
 const downloadTimeout = process.env.DOWNLOAD_TIMEOUT || "60s";
 const outboundKeepAliveInterval = process.env.OUTBOUND_KEEP_ALIVE_INTERVAL || "1s";
 const mavenNegativeCacheTtl = process.env.MAVEN_NEGATIVE_CACHE_TTL || "24h";
-const mavenAffinityFlushInterval = process.env.MAVEN_AFFINITY_FLUSH_INTERVAL || "5s";
+// Prefer new MAVEN_NEGATIVE_* names but fall back to legacy MAVEN_AFFINITY_* for compatibility
+const mavenNegativeFlushInterval = process.env.MAVEN_NEGATIVE_FLUSH_INTERVAL || process.env.MAVEN_AFFINITY_FLUSH_INTERVAL || "5s";
 const logRetention = process.env.LOG_RETENTION || "7d";
 
 const downloadTimeoutMs = Math.max(1, parseDurationToMs(downloadTimeout, 60 * 1000));
 const outboundKeepAliveMsecs = Math.max(1, parseDurationToMs(outboundKeepAliveInterval, 1000));
 const mavenNegativeCacheTtlMs = Math.max(1, parseDurationToMs(mavenNegativeCacheTtl, 24 * 60 * 60 * 1000));
-const mavenAffinityFlushIntervalMs = Math.max(1, parseDurationToMs(mavenAffinityFlushInterval, 5 * 1000));
+const mavenNegativeFlushIntervalMs = Math.max(1, parseDurationToMs(mavenNegativeFlushInterval, 5 * 1000));
 const logRetentionDays = Math.max(1, Math.ceil(parseDurationToMs(logRetention, 7 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)));
-const mavenAffinityEventMaxBytes = Math.max(1, toInt(process.env.MAVEN_AFFINITY_EVENT_MAX_MB, 8)) * 1024 * 1024;
+const mavenNegativeEventMaxBytes = Math.max(1, toInt(process.env.MAVEN_NEGATIVE_EVENT_MAX_MB ?? process.env.MAVEN_AFFINITY_EVENT_MAX_MB, 8)) * 1024 * 1024;
 
 export const config = {
   configMode,
@@ -268,13 +269,20 @@ export const config = {
   outboundKeepAliveMsecs,
   outboundMaxSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_SOCKETS, 64)),
   outboundMaxFreeSockets: Math.max(1, toInt(process.env.OUTBOUND_MAX_FREE_SOCKETS, 16)),
-  mavenAffinityEnabled: toBool(process.env.MAVEN_AFFINITY_ENABLED, true),
-  mavenAffinityIndexDir: path.resolve(configBaseDir, process.env.MAVEN_AFFINITY_INDEX_DIR || "data/index"),
+  // Negative-only index configuration (new names)
+  mavenNegativeEnabled: toBool(process.env.MAVEN_NEGATIVE_ENABLED ?? process.env.MAVEN_AFFINITY_ENABLED, true),
+  mavenNegativeIndexDir: path.resolve(configBaseDir, process.env.MAVEN_NEGATIVE_INDEX_DIR || process.env.MAVEN_AFFINITY_INDEX_DIR || "data/index"),
   mavenNegativeCacheTtl,
   mavenNegativeCacheTtlMs,
-  mavenAffinityFlushInterval,
-  mavenAffinityFlushIntervalMs,
-  mavenAffinityEventMaxBytes,
+  mavenNegativeFlushInterval,
+  mavenNegativeFlushIntervalMs,
+  mavenNegativeEventMaxBytes,
+  // Backwards-compatible aliases for older code that still references affinity names
+  mavenAffinityEnabled: toBool(process.env.MAVEN_NEGATIVE_ENABLED ?? process.env.MAVEN_AFFINITY_ENABLED, true),
+  mavenAffinityIndexDir: path.resolve(configBaseDir, process.env.MAVEN_NEGATIVE_INDEX_DIR || process.env.MAVEN_AFFINITY_INDEX_DIR || "data/index"),
+  mavenAffinityFlushInterval: mavenNegativeFlushInterval,
+  mavenAffinityFlushIntervalMs: mavenNegativeFlushIntervalMs,
+  mavenAffinityEventMaxBytes: mavenNegativeEventMaxBytes,
   cacheCleanupEnabled: toBool(process.env.CACHE_CLEANUP_ENABLED, true),
   cacheCleanupDailyAt: process.env.CACHE_CLEANUP_DAILY_AT || "03:00",
   cacheCleanupCheckMinInterval: process.env.CACHE_CLEANUP_CHECK_MIN_INTERVAL || "10m",

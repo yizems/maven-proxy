@@ -273,11 +273,11 @@ npm start
 - `OUTBOUND_KEEP_ALIVE_INTERVAL`: keep-alive 间隔（支持 `s/m/h/d`），默认 `1s`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站允许的最大出站连接数，默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站保留的空闲连接上限，默认 `16`。
-- `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 索引。
-- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录，默认 `data/index`。
-- `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`），例如 `24h`。
-- `MAVEN_AFFINITY_FLUSH_INTERVAL`: affinity 事件日志 flush 周期（支持 `s/m/h/d`），例如 `5s`。
-- `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。
+ - `MAVEN_NEGATIVE_ENABLED`: 是否启用 Maven negative 索引。默认 `true`。
+ - `MAVEN_NEGATIVE_INDEX_DIR`: Maven negative 索引目录，默认 `data/index`。
+ - `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`），例如 `24h`。
+ - `MAVEN_NEGATIVE_FLUSH_INTERVAL`: negative 事件日志 flush 周期（支持 `s/m/h/d`），例如 `5s`。
+ - `MAVEN_NEGATIVE_EVENT_MAX_MB`: negative 事件日志压缩阈值（MB）。
 - `MAVEN_PROXY_CONFIG_MODE`: 配置模式，`development` 或 `user`。
 - `MAVEN_PROXY_CONFIG_FILE`: 指定配置文件路径（优先级高于默认路径）。
 - `EXISTING_TRUST_STORE_PATH`: 已有 truststore 路径（可选）。若文件存在，`truststore init` 会优先以它作为源。
@@ -330,11 +330,11 @@ npm start
 - `OUTBOUND_KEEP_ALIVE_INTERVAL`: keep-alive 间隔（支持 `s/m/h/d`）。默认 `1s`。
 - `OUTBOUND_MAX_SOCKETS`: 每个源站的最大出站连接数。默认 `64`。
 - `OUTBOUND_MAX_FREE_SOCKETS`: 每个源站可保留的空闲连接上限。默认 `16`。
-- `MAVEN_AFFINITY_ENABLED`: 是否启用 Maven affinity 缓存索引。默认 `true`。
-- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity 索引目录。默认 `data/index`。
-- `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`）。默认 `24h`。
-- `MAVEN_AFFINITY_FLUSH_INTERVAL`: affinity 事件日志 flush 周期（支持 `s/m/h/d`）。默认 `5s`。
-- `MAVEN_AFFINITY_EVENT_MAX_MB`: affinity 事件日志压缩阈值（MB）。默认 `8`。
+ - `MAVEN_NEGATIVE_ENABLED`: 是否启用 Maven negative 缓存索引。默认 `true`。
+ - `MAVEN_NEGATIVE_INDEX_DIR`: Maven negative 索引目录。默认 `data/index`。
+ - `MAVEN_NEGATIVE_CACHE_TTL`: 负缓存 TTL（支持 `s/m/h/d`）。默认 `24h`。
+ - `MAVEN_NEGATIVE_FLUSH_INTERVAL`: negative 事件日志 flush 周期（支持 `s/m/h/d`）。默认 `5s`。
+ - `MAVEN_NEGATIVE_EVENT_MAX_MB`: negative 事件日志压缩阈值（MB）。默认 `8`。
 - `UPSTREAM_PROXY_URL`: 通用上级代理地址（HTTP/HTTPS 的兜底）。
 - `UPSTREAM_HTTP_PROXY_URL`: HTTP 请求使用的上级代理地址。
 - `UPSTREAM_HTTPS_PROXY_URL`: HTTPS 请求使用的上级代理地址。

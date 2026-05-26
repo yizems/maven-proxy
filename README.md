@@ -288,11 +288,11 @@ Environment variables:
 - OUTBOUND_KEEP_ALIVE_INTERVAL: keep-alive interval (supports s/m/h/d), for example 1s.
 - OUTBOUND_MAX_SOCKETS: max outbound sockets per origin.
 - OUTBOUND_MAX_FREE_SOCKETS: max idle outbound sockets per origin.
-- MAVEN_AFFINITY_ENABLED: enable Maven affinity index.
-- MAVEN_AFFINITY_INDEX_DIR: Maven affinity index directory. Default data/index.
-- MAVEN_NEGATIVE_CACHE_TTL: negative cache TTL (supports s/m/h/d), for example 24h.
-- MAVEN_AFFINITY_FLUSH_INTERVAL: flush interval for affinity event log (supports s/m/h/d), for example 5s.
-- MAVEN_AFFINITY_EVENT_MAX_MB: max size threshold for affinity event log compaction in MB.
+ - MAVEN_NEGATIVE_ENABLED: enable Maven negative index. Default true.
+ - MAVEN_NEGATIVE_INDEX_DIR: Maven negative index directory. Default data/index.
+ - MAVEN_NEGATIVE_CACHE_TTL: negative cache TTL (supports s/m/h/d), for example 24h.
+ - MAVEN_NEGATIVE_FLUSH_INTERVAL: flush interval for negative event log (supports s/m/h/d), for example 5s.
+ - MAVEN_NEGATIVE_EVENT_MAX_MB: max size threshold for negative event log compaction in MB.
 - MAVEN_PROXY_CONFIG_MODE: development or user.
 - MAVEN_PROXY_CONFIG_FILE: explicit config file path.
 - EXISTING_TRUST_STORE_PATH: optional existing truststore path. If present, truststore init prefers it as source.
@@ -343,11 +343,11 @@ Priority:
 - `OUTBOUND_KEEP_ALIVE_INTERVAL`: Keep-alive interval (supports `s/m/h/d`). Default `1s`.
 - `OUTBOUND_MAX_SOCKETS`: Max outbound sockets per origin. Default `64`.
 - `OUTBOUND_MAX_FREE_SOCKETS`: Max idle outbound sockets per origin. Default `16`.
-- `MAVEN_AFFINITY_ENABLED`: Enable Maven affinity cache index. Default `true`.
-- `MAVEN_AFFINITY_INDEX_DIR`: Maven affinity index directory. Default `data/index`.
-- `MAVEN_NEGATIVE_CACHE_TTL`: Negative cache TTL (supports `s/m/h/d`). Default `24h`.
-- `MAVEN_AFFINITY_FLUSH_INTERVAL`: Flush interval for affinity event log (supports `s/m/h/d`). Default `5s`.
-- `MAVEN_AFFINITY_EVENT_MAX_MB`: Max size threshold for affinity event log compaction in MB. Default `8`.
+ - `MAVEN_NEGATIVE_ENABLED`: Enable Maven negative cache index. Default `true`.
+ - `MAVEN_NEGATIVE_INDEX_DIR`: Maven negative index directory. Default `data/index`.
+ - `MAVEN_NEGATIVE_CACHE_TTL`: Negative cache TTL (supports `s/m/h/d`). Default `24h`.
+ - `MAVEN_NEGATIVE_FLUSH_INTERVAL`: Flush interval for negative event log (supports `s/m/h/d`). Default `5s`.
+ - `MAVEN_NEGATIVE_EVENT_MAX_MB`: Max size threshold for negative event log compaction in MB. Default `8`.
 - `UPSTREAM_PROXY_URL`: Generic upstream proxy URL (fallback for HTTP/HTTPS).
 - `UPSTREAM_HTTP_PROXY_URL`: Upstream proxy URL for HTTP requests.
 - `UPSTREAM_HTTPS_PROXY_URL`: Upstream proxy URL for HTTPS requests.

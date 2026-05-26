@@ -35,8 +35,8 @@
     "npm:version:patch": "npm version patch",
     "npm:view:version": "npm view maven-proxy version",
     "npm:view:dist-tags": "npm view maven-proxy dist-tags",
-    "replay:affinity": "node --test test/replay-affinity.test.js",
-    "test:replay": "node --test test/replay-affinity.test.js",
+    "replay:negative": "node --test test/replay-negative.test.js",
+    "test:replay": "node --test test/replay-negative.test.js",
     "test": "node --test test/*.test.js"
   },
   "keywords": [],

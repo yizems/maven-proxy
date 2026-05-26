@@ -193,11 +193,11 @@ function getDefaultConfigTemplate() {
   appendEntry("OUTBOUND_KEEP_ALIVE_INTERVAL", "1s", "keep-alive 间隔（支持 s/m/h/d），默认 1s。", "Keep-alive interval (supports s/m/h/d). Default: 1s.");
   appendEntry("OUTBOUND_MAX_SOCKETS", "64", "每个源站最大出站连接数，默认 64。", "Maximum outbound sockets per upstream host. Default: 64.");
   appendEntry("OUTBOUND_MAX_FREE_SOCKETS", "16", "每个源站可保留空闲连接上限，默认 16。", "Maximum free outbound sockets kept per upstream host. Default: 16.");
-  appendEntry("MAVEN_AFFINITY_ENABLED", "true", "是否启用 Maven affinity 缓存索引，默认 true。", "Enable Maven affinity index. Default: true.");
-  appendEntry("MAVEN_AFFINITY_INDEX_DIR", "data/index", "Maven affinity 索引目录，默认 data/index。", "Maven affinity index directory. Default: data/index.");
+  appendEntry("MAVEN_NEGATIVE_ENABLED", "true", "是否启用 Maven negative 索引，默认 true。", "Enable Maven negative index. Default: true.");
+  appendEntry("MAVEN_NEGATIVE_INDEX_DIR", "data/index", "Maven negative 索引目录，默认 data/index。", "Maven negative index directory. Default: data/index.");
   appendEntry("MAVEN_NEGATIVE_CACHE_TTL", "24h", "负缓存 TTL（支持 s/m/h/d），默认 24h。", "Negative cache TTL (supports s/m/h/d). Default: 24h.");
-  appendEntry("MAVEN_AFFINITY_FLUSH_INTERVAL", "5s", "affinity 事件日志 flush 周期（支持 s/m/h/d），默认 5s。", "Affinity event log flush interval (supports s/m/h/d). Default: 5s.");
-  appendEntry("MAVEN_AFFINITY_EVENT_MAX_MB", "8", "affinity 事件日志压缩阈值（MB），默认 8。", "Affinity event log compaction threshold in MB. Default: 8.");
+  appendEntry("MAVEN_NEGATIVE_FLUSH_INTERVAL", "5s", "negative 事件日志 flush 周期（支持 s/m/h/d），默认 5s。", "Negative event log flush interval (supports s/m/h/d). Default: 5s.");
+  appendEntry("MAVEN_NEGATIVE_EVENT_MAX_MB", "8", "negative 事件日志压缩阈值（MB），默认 8。", "Negative event log compaction threshold in MB. Default: 8.");
   appendEntry("UPSTREAM_PROXY_URL", "", "通用上级代理地址（HTTP/HTTPS 兜底）。", "Generic upstream proxy URL fallback for HTTP/HTTPS.");
   appendEntry("UPSTREAM_HTTP_PROXY_URL", "", "HTTP 请求使用的上级代理地址。", "Upstream proxy URL for HTTP requests.");
   appendEntry("UPSTREAM_HTTPS_PROXY_URL", "", "HTTPS 请求使用的上级代理地址。", "Upstream proxy URL for HTTPS requests.");

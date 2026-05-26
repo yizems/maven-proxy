@@ -31,16 +31,6 @@ function readJsonFile(filePath, fallback) {
   }
 }
 
-function serializeSnapshot(positiveMap, negativeMap, conflictMap) {
-  return {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    positive: [...positiveMap.entries()],
-    negative: [...negativeMap.entries()],
-    conflicts: [...conflictMap.entries()],
-  };
-}
-
 function normalizeRequestPath(pathname) {
   return String(pathname || "")
     .replace(/\\/g, "/")
@@ -64,22 +54,26 @@ function buildNegativeKey(scope, canonicalKey) {
   return `${String(scope || "").toLowerCase()}|${canonicalKey}`;
 }
 
-export class MavenAffinityIndex {
+function serializeSnapshot(negativeMap) {
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    negative: [...negativeMap.entries()],
+  };
+}
+
+export class MavenNegativeIndex {
   constructor(config) {
-    this.enabled = toBool(config.mavenAffinityEnabled, true);
-    this.indexDir = config.mavenAffinityIndexDir;
+    this.enabled = toBool(config.mavenNegativeEnabled, true);
+    this.indexDir = config.mavenNegativeIndexDir;
     this.negativeTtlMs = toPositiveInt(config.mavenNegativeCacheTtlMs, 24 * 60 * 60 * 1000);
-    this.flushIntervalMs = toPositiveInt(config.mavenAffinityFlushIntervalMs, 5000);
-    this.maxEventBytes = toPositiveInt(config.mavenAffinityEventMaxBytes, 8 * 1024 * 1024);
+    this.flushIntervalMs = toPositiveInt(config.mavenNegativeFlushIntervalMs, 5000);
+    this.maxEventBytes = toPositiveInt(config.mavenNegativeEventMaxBytes, 8 * 1024 * 1024);
 
-    this.snapshotPath = path.join(this.indexDir, "maven-affinity.snapshot.json");
-    this.eventLogPath = path.join(this.indexDir, "maven-affinity.events.log");
+    this.snapshotPath = path.join(this.indexDir, "maven-negative.snapshot.json");
+    this.eventLogPath = path.join(this.indexDir, "maven-negative.events.log");
 
-    // Positive entries are persistent and have no TTL. They are removed only
-    // when the cache file disappears or a conflict is detected.
-    this.positive = new Map();
     this.negative = new Map();
-    this.conflicts = new Map();
 
     this.pendingEvents = [];
     this.flushTimer = null;
@@ -98,7 +92,7 @@ export class MavenAffinityIndex {
 
     this.flushTimer = setInterval(() => {
       this.flush().catch((error) => {
-        console.error(`[affinity] flush failed: ${error.message}`);
+        console.error(`[maven-negative] flush failed: ${error.message}`);
       });
     }, this.flushIntervalMs);
 
@@ -113,19 +107,11 @@ export class MavenAffinityIndex {
       return;
     }
 
-    for (const [key, value] of snapshot.positive || []) {
-      this.positive.set(key, value);
-    }
-
     const currentTime = nowMs();
     for (const [key, value] of snapshot.negative || []) {
       if (value?.expireAt && value.expireAt > currentTime) {
         this.negative.set(key, value);
       }
-    }
-
-    for (const [key, value] of snapshot.conflicts || []) {
-      this.conflicts.set(key, value);
     }
   }
 
@@ -167,22 +153,6 @@ export class MavenAffinityIndex {
       return;
     }
 
-    if (type === "positive_upsert") {
-      this.positive.set(payload.key, payload.value);
-      if (append) {
-        this.#enqueueEvent(type, payload);
-      }
-      return;
-    }
-
-    if (type === "positive_remove") {
-      this.positive.delete(payload.key);
-      if (append) {
-        this.#enqueueEvent(type, payload);
-      }
-      return;
-    }
-
     if (type === "negative_upsert") {
       if (payload.value?.expireAt > nowMs()) {
         this.negative.set(payload.key, payload.value);
@@ -201,50 +171,6 @@ export class MavenAffinityIndex {
         this.#enqueueEvent(type, payload);
       }
       return;
-    }
-
-    if (type === "conflict_set") {
-      this.conflicts.set(payload.key, payload.value);
-      if (append) {
-        this.#enqueueEvent(type, payload);
-      }
-      return;
-    }
-
-    if (type === "conflict_clear") {
-      this.conflicts.delete(payload.key);
-      if (append) {
-        this.#enqueueEvent(type, payload);
-      }
-    }
-  }
-
-  async resolvePreferredCachePath(canonicalKey) {
-    if (!this.enabled || !canonicalKey) {
-      return "";
-    }
-
-    if (this.conflicts.has(canonicalKey)) {
-      return "";
-    }
-
-    const existing = this.positive.get(canonicalKey);
-    if (!existing?.cachePath) {
-      return "";
-    }
-
-    try {
-      const stats = await fs.promises.stat(existing.cachePath);
-      if (!stats.isFile()) {
-        throw new Error("not-file");
-      }
-      return existing.cachePath;
-    } catch {
-      this.#applyEvent({
-        type: "positive_remove",
-        payload: { key: canonicalKey },
-      });
-      return "";
     }
   }
 
@@ -271,58 +197,6 @@ export class MavenAffinityIndex {
     return true;
   }
 
-  recordSuccess({ canonicalKey, host, cachePath, fileName, urlObj = null }) {
-    if (!this.enabled || !canonicalKey || !cachePath || !fileName) {
-      return;
-    }
-
-    const previous = this.positive.get(canonicalKey);
-    if (previous && previous.fileName !== fileName) {
-      this.#applyEvent({
-        type: "conflict_set",
-        payload: {
-          key: canonicalKey,
-          value: {
-            reason: "file-name-mismatch",
-            updatedAt: nowMs(),
-            previousFileName: previous.fileName,
-            currentFileName: fileName,
-          },
-        },
-      });
-
-      this.#applyEvent({
-        type: "positive_remove",
-        payload: { key: canonicalKey },
-      });
-      return;
-    }
-
-    this.#applyEvent({
-      type: "positive_upsert",
-      payload: {
-        key: canonicalKey,
-        value: {
-          cachePath,
-          fileName,
-          host: String(host || "").toLowerCase(),
-          updatedAt: nowMs(),
-        },
-      },
-    });
-
-    const successScope = buildNegativeScope(urlObj);
-    if (successScope) {
-      const negativeKey = buildNegativeKey(successScope, canonicalKey);
-      if (this.negative.has(negativeKey)) {
-        this.#applyEvent({
-          type: "negative_remove",
-          payload: { key: negativeKey },
-        });
-      }
-    }
-  }
-
   recordNegative({ canonicalKey, urlObj, statusCode = 404, ttlMs = this.negativeTtlMs }) {
     const scope = buildNegativeScope(urlObj);
     if (!this.enabled || !canonicalKey || !scope) {
@@ -343,6 +217,16 @@ export class MavenAffinityIndex {
         },
       },
     });
+  }
+
+  clearNegative({ canonicalKey, urlObj }) {
+    const scope = buildNegativeScope(urlObj);
+    if (!this.enabled || !canonicalKey || !scope) {
+      return;
+    }
+
+    const key = buildNegativeKey(scope, canonicalKey);
+    this.#applyEvent({ type: "negative_remove", payload: { key } });
   }
 
   async flush() {
@@ -370,7 +254,7 @@ export class MavenAffinityIndex {
   }
 
   async #writeSnapshotAndResetEventLog() {
-    const snapshot = serializeSnapshot(this.positive, this.negative, this.conflicts);
+    const snapshot = serializeSnapshot(this.negative);
     const tempPath = `${this.snapshotPath}.tmp`;
     await fs.promises.writeFile(tempPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
     await fs.promises.rename(tempPath, this.snapshotPath);

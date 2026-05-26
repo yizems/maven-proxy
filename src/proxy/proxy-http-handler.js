@@ -80,11 +80,7 @@ function sendErrorText(res, statusCode, message, context = "proxy") {
   sendText(res, statusCode, message);
 }
 
-export function isPositiveAffinityEligible(fileName) {
-  const lower = String(fileName || "").toLowerCase();
-  const base = lower.replace(/\.(sha1|sha256|sha512|md5|asc)$/i, "");
-  return /\.(jar|aar|war)$/i.test(base);
-}
+// Positive affinity removed: only negative index (404/410) is retained.
 
 function buildUrl(req, forcedProtocol = null) {
   const raw = req.url || "/";
@@ -204,7 +200,7 @@ export function createHttpRequestHandler({
         mavenCacheIgnorePathPrefixRules: config.mavenCacheIgnorePathPrefixRules,
       });
 
-      if (ecosystem === "maven" && mavenAffinityIndex?.enabled) {
+      if (ecosystem === "maven" && mavenAffinityIndex) {
         canonical = parseMavenReleaseCanonical(urlObj);
       }
     } catch (error) {
@@ -221,19 +217,8 @@ export function createHttpRequestHandler({
     }
 
     if (canonical && mavenAffinityIndex) {
-      const canUsePositiveAffinity = !config.mavenCacheUseDomainDir && isPositiveAffinityEligible(canonical.fileName);
-
-      if (canUsePositiveAffinity) {
-        const preferredPath = await mavenAffinityIndex.resolvePreferredCachePath(canonical.canonicalKey);
-        if (preferredPath) {
-          console.log(`[proxy] affinity hit canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
-          await serveFile(res, req, preferredPath, cacheCleanupManager);
-          return;
-        }
-      }
-
       if (mavenAffinityIndex.shouldSkipRequest(canonical.canonicalKey, urlObj)) {
-        console.log(`[proxy] affinity negative skip canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
+        console.log(`[proxy] negative skip canonical=${canonical.canonicalKey} host=${urlObj.hostname}`);
         sendText(res, 404, "Not Found");
         return;
       }
@@ -247,19 +232,13 @@ export function createHttpRequestHandler({
       await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
       await downloader.ensureCached(urlObj, cachePath, req.headers);
 
-      if (
-        canonical &&
-        mavenAffinityIndex &&
-        !config.mavenCacheUseDomainDir &&
-        isPositiveAffinityEligible(canonical.fileName)
-      ) {
-        mavenAffinityIndex.recordSuccess({
-          canonicalKey: canonical.canonicalKey,
-          host: urlObj.hostname,
-          cachePath,
-          fileName: canonical.fileName,
-          urlObj,
-        });
+      if (canonical && mavenAffinityIndex) {
+        try {
+          // Clear any negative entry for this request scope on successful fetch.
+          mavenAffinityIndex.clearNegative({ canonicalKey: canonical.canonicalKey, urlObj });
+        } catch (err) {
+          console.error(`[proxy] clearing negative index failed: ${err?.message || err}`);
+        }
       }
 
       res.setHeader("x-cache", "MISS");

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { afterEach, describe, test } from "node:test";
-import { MavenAffinityIndex } from "../src/cache/maven-affinity-index.js";
+import { MavenNegativeIndex } from "../src/cache/maven-negative-index.js";
 
 const tempDirs = [];
 
@@ -20,19 +20,16 @@ afterEach(async () => {
   }
 });
 
-describe("maven affinity index ttl semantics", () => {
-  test("positive entries do not expire while negative entries honor ttl", async () => {
+describe("maven negative index ttl semantics", () => {
+  test("negative entries honor ttl and can be cleared on success", async () => {
     const indexDir = createTempDir("maven-affinity-index-");
-    const cacheFile = path.join(indexDir, "demo-1.0.0.pom");
-    const cacheBody = "<project/>";
-    await fs.promises.writeFile(cacheFile, cacheBody, "utf8");
 
-    const index = new MavenAffinityIndex({
-      mavenAffinityEnabled: true,
-      mavenAffinityIndexDir: indexDir,
+    const index = new MavenNegativeIndex({
+      mavenNegativeEnabled: true,
+      mavenNegativeIndexDir: indexDir,
       mavenNegativeCacheTtlMs: 50,
-      mavenAffinityFlushIntervalMs: 1000,
-      mavenAffinityEventMaxBytes: 1024 * 1024,
+      mavenNegativeFlushIntervalMs: 1000,
+      mavenNegativeEventMaxBytes: 1024 * 1024,
     });
 
     await index.init();
@@ -40,21 +37,7 @@ describe("maven affinity index ttl semantics", () => {
     const canonicalKey = "com/acme/demo/1.0.0/demo-1.0.0.pom";
     const urlObj = new URL("https://repo1.maven.org/maven2/com/acme/demo/1.0.0/demo-1.0.0.pom");
 
-    index.recordSuccess({
-      canonicalKey,
-      host: urlObj.hostname,
-      cachePath: cacheFile,
-      fileName: "demo-1.0.0.pom",
-      urlObj,
-    });
-
-    index.recordNegative({
-      canonicalKey,
-      urlObj,
-      statusCode: 404,
-      ttlMs: 50,
-    });
-
+    index.recordNegative({ canonicalKey, urlObj, statusCode: 404, ttlMs: 50 });
     assert.equal(index.shouldSkipRequest(canonicalKey, urlObj), true);
 
     await new Promise((resolve) => setTimeout(resolve, 80));
@@ -62,9 +45,11 @@ describe("maven affinity index ttl semantics", () => {
     // Negative cache entry expires by TTL.
     assert.equal(index.shouldSkipRequest(canonicalKey, urlObj), false);
 
-    // Positive cache entry remains available without TTL expiration.
-    const preferredPath = await index.resolvePreferredCachePath(canonicalKey);
-    assert.equal(preferredPath, cacheFile);
+    // Clear negative entry on success
+    index.recordNegative({ canonicalKey, urlObj, statusCode: 404, ttlMs: 10000 });
+    assert.equal(index.shouldSkipRequest(canonicalKey, urlObj), true);
+    index.clearNegative({ canonicalKey, urlObj });
+    assert.equal(index.shouldSkipRequest(canonicalKey, urlObj), false);
 
     await index.destroy();
   });

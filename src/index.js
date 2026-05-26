@@ -7,7 +7,7 @@ import { startProxyServer } from "./proxy/proxy-server.js";
 import { startRepoServer } from "./repo/repo-server.js";
 import { getTrustStoreCommands } from "./cert/truststore-utils.js";
 import { UpstreamProxyManager } from "./proxy/upstream-proxy.js";
-import { MavenAffinityIndex } from "./cache/maven-affinity-index.js";
+import { MavenNegativeIndex } from "./cache/maven-negative-index.js";
 import { CacheCleanupManager } from "./cache/cache-cleanup-manager.js";
 import { installConsoleLogFileMirror, installGlobalErrorLogging } from "./common/console-log-file.js";
 
@@ -84,8 +84,8 @@ async function main() {
   }
 
   const upstreamProxyManager = new UpstreamProxyManager(config, matchesDomain);
-  const mavenAffinityIndex = new MavenAffinityIndex(config);
-  await mavenAffinityIndex.init();
+  const mavenNegativeIndex = new MavenNegativeIndex(config);
+  await mavenNegativeIndex.init();
   const cacheCleanupManager = new CacheCleanupManager(config);
   await cacheCleanupManager.init();
 
@@ -97,7 +97,7 @@ async function main() {
     downloader,
     matchesDomain,
     upstreamProxyManager,
-    mavenAffinityIndex,
+    mavenNegativeIndex,
     cacheCleanupManager,
   );
   const repoServer = startRepoServer(config, downloader, cacheCleanupManager);
@@ -132,12 +132,12 @@ async function main() {
   startupInfo(`[maven-proxy] outbound keepAlive interval: ${config.outboundKeepAliveInterval}`);
   startupInfo(`[maven-proxy] outbound maxSockets: ${config.outboundMaxSockets}`);
   startupInfo(`[maven-proxy] outbound maxFreeSockets: ${config.outboundMaxFreeSockets}`);
-  startupInfo(`[maven-proxy] maven affinity enabled: ${config.mavenAffinityEnabled}`);
-  startupInfo(`[maven-proxy] maven affinity index dir: ${config.mavenAffinityIndexDir}`);
+  startupInfo(`[maven-proxy] maven negative index enabled: ${config.mavenNegativeEnabled}`);
+  startupInfo(`[maven-proxy] maven negative index dir: ${config.mavenNegativeIndexDir}`);
   startupInfo(`[maven-proxy] maven negative cache ttl: ${config.mavenNegativeCacheTtl}`);
-  startupInfo(`[maven-proxy] maven affinity flush interval: ${config.mavenAffinityFlushInterval}`);
+  startupInfo(`[maven-proxy] maven negative flush interval: ${config.mavenNegativeFlushInterval}`);
   startupInfo(`[maven-proxy] download timeout: ${config.downloadTimeout}`);
-  startupInfo(`[maven-proxy] maven affinity event max(MB): ${config.mavenAffinityEventMaxBytes / (1024 * 1024)}`);
+  startupInfo(`[maven-proxy] maven negative event max(MB): ${config.mavenNegativeEventMaxBytes / (1024 * 1024)}`);
   startupInfo(`[maven-proxy] cache cleanup enabled: ${config.cacheCleanupEnabled}`);
   startupInfo(`[maven-proxy] cache cleanup daily at: ${config.cacheCleanupDailyAt}`);
   startupInfo(`[maven-proxy] cache touch on hit: ${config.cacheTouchOnHit}`);
@@ -169,7 +169,7 @@ async function main() {
     repoServer.close();
     upstreamProxyManager.destroy();
     void cacheCleanupManager.destroy();
-    void mavenAffinityIndex.destroy();
+    void mavenNegativeIndex.destroy();
   };
 
   process.on("SIGINT", shutdown);
