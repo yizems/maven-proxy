@@ -2,6 +2,8 @@
 
 [English](README.md) | [中文](README-zh.md)
 
+[English ChangeLog](ChangeLog.md) | [中文更新日志](ChangeLog-zh.md)
+
 [![npm version](https://img.shields.io/npm/v/maven-proxy.svg)](https://www.npmjs.com/package/maven-proxy)
 
 ## 1. 项目定位

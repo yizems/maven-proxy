@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+- Added support for ignoring Maven cache path prefixes by host.
+- Added Maven domain-dir switch and integrated cache path wiring.
+
+### Git Commits Included (after `1.3.1`)
+- `20ef408` feat(cache): add maven cache ignore path prefixes by host
+- `75264bf` feat(cache): add maven domain-dir switch and wire cache paths
+
 ## [1.3.1] - 2026-05-26
 
 ### Added
