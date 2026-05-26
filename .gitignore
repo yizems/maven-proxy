@@ -128,3 +128,4 @@ dist
 # Runtime artifacts for maven-proxy
 data/cache
 data/certs/leaf
+data/index
