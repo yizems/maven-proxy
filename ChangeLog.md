@@ -2,11 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [1.3.3]
 
 ### Added
 - Added support for ignoring Maven cache path prefixes by host.
 - Added Maven domain-dir switch and integrated cache path wiring.
+
+### Changed
+- Removed positive 'affinity' cache reuse: the index now maintains negative-only entries (404/410) to suppress repeated upstream requests.
+- Renamed environment variables from `MAVEN_AFFINITY_*` to `MAVEN_NEGATIVE_*` and added backwards-compatible fallbacks for `MAVEN_AFFINITY_*`.
+- Rewrote the index implementation to `src/cache/maven-negative-index.js` and removed the old `maven-affinity-index.js`.
+- Updated the generated config template (`bin/maven-proxy.js`) and sample `config.properties` to use `MAVEN_NEGATIVE_*` keys.
+- Updated `src/proxy/proxy-http-handler.js` to skip caching for extensionless paths and to clear negative entries on successful fetches.
+- Updated tests and npm scripts to use `negative` naming; removed tests specific to positive-affinity replay/eligibility.
+- Updated documentation (README, docs) and ChangeLog-zh to reflect the rename and migration notes.
+
+### Removed
+- Removed positive-affinity indexing logic and related replay / E2E tests.
 
 ### Git Commits Included (after `1.3.1`)
 - `20ef408` feat(cache): add maven cache ignore path prefixes by host

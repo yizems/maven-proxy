@@ -2,11 +2,23 @@
 
 本文件记录了本项目的所有重要变更。
 
-## [未发布]
+## [1.3.3]
 
 ### 新增
 - 增加了按 host 忽略 Maven 缓存路径前缀的支持。
 - 增加了 Maven domain-dir 切换及缓存路径接线功能。
+
+### 变更
+- 移除正向 affinity 缓存重用：索引改为仅保留负缓存（404/410）以抑制重复上游请求。
+- 将环境变量从 `MAVEN_AFFINITY_*` 重命名为 `MAVEN_NEGATIVE_*`，并保留对旧 `MAVEN_AFFINITY_*` 的向后兼容回退。
+- 重写索引实现为 `src/cache/maven-negative-index.js`，并删除旧的 `maven-affinity-index.js`。
+- 更新生成的配置模板（`bin/maven-proxy.js`）和示例 `config.properties` 以使用 `MAVEN_NEGATIVE_*`。
+- 更新 `src/proxy/proxy-http-handler.js`：对无后缀路径跳过缓存，并在成功获取后清理负缓存条目。
+- 更新测试与 npm 脚本以使用 `negative` 命名；移除了依赖正向 affinity 的回放/集成测试。
+- 更新文档（README、docs）与 `ChangeLog.md` 以反映重命名与迁移说明。
+
+### 移除
+- 移除正向 affinity 索引逻辑以及相关的回放 / 端到端测试。
 
 ### 包含的 Git 提交（自 `1.3.1` 之后）
 - `20ef408` feat(cache): add maven cache ignore path prefixes by host
