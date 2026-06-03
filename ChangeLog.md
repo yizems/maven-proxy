@@ -2,9 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
-## [1.3.6]
+## [1.4.0] - 2026-06-03
 
-set Host header to download target when using meta.originalUrl
+### Added
+- implement streaming for cache-miss GET requests to improve client response time
 
 ## [1.3.7] - 2026-05-26
 
@@ -19,6 +20,10 @@ set Host header to download target when using meta.originalUrl
 
 ### Other
 - Minor refactor and duplication removal across config and cache cleanup code.
+
+## [1.3.6]
+
+set Host header to download target when using meta.originalUrl
 
 ## [1.3.4] - 2026-05-26
 
