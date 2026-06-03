@@ -2,7 +2,7 @@ import fs from "node:fs";
 import http from "node:http";
 import https from "node:https";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
+import { finished, pipeline } from "node:stream/promises";
 
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
@@ -37,6 +37,28 @@ function pickClient(protocol) {
 }
 
 function stripHopByHopHeaders(headers = {}) {
+  const result = { ...headers };
+  const blocked = [
+    "connection",
+    "proxy-connection",
+    "keep-alive",
+    "transfer-encoding",
+    "upgrade",
+    "te",
+    "trailer",
+    "proxy-authenticate",
+    "proxy-authorization",
+  ];
+
+  for (const header of blocked) {
+    delete result[header];
+    delete result[header.toLowerCase()];
+  }
+
+  return result;
+}
+
+function stripHopByHopResponseHeaders(headers = {}) {
   const result = { ...headers };
   const blocked = [
     "connection",
@@ -320,6 +342,186 @@ export class Downloader {
     }
 
     return { cacheHit: false, finalPath };
+  }
+
+  async streamMissToClient(urlObj, finalPath, requestHeaders = {}, res = null) {
+    if (!res || typeof res.writeHead !== "function") {
+      throw new Error("streamMissToClient requires a valid response object");
+    }
+
+    if (await fileExists(finalPath)) {
+      return { cacheHit: true, finalPath, responseSent: false };
+    }
+
+    const existing = this.inflight.get(finalPath);
+    if (existing) {
+      await existing;
+      return { cacheHit: true, finalPath, responseSent: false };
+    }
+
+    const downloadPromise = this.#downloadAtomicAndMirror(urlObj, finalPath, requestHeaders, res);
+    this.inflight.set(finalPath, downloadPromise);
+
+    try {
+      await downloadPromise;
+    } finally {
+      this.inflight.delete(finalPath);
+    }
+
+    return { cacheHit: false, finalPath, responseSent: true };
+  }
+
+  async #downloadAtomicAndMirror(urlObj, finalPath, requestHeaders, res) {
+    const startedAt = Date.now();
+
+    await fs.promises.mkdir(path.dirname(finalPath), { recursive: true });
+    const tempPath = `${finalPath}.temp`;
+    await removeIfExists(tempPath);
+
+    try {
+      const headers = stripHopByHopHeaders(requestHeaders);
+      headers["accept-encoding"] = "identity";
+
+      const getAgent = this.upstreamProxyManager
+        ? (currentUrl) => this.upstreamProxyManager.getAgentForUrl(currentUrl)
+        : null;
+
+      const { urlObj: finalUrl, res: upstreamRes } = await requestWithRedirect(
+        urlObj,
+        {
+          method: "GET",
+          headers,
+          timeoutMs: this.config.downloadTimeoutMs,
+          getAgent,
+        },
+      );
+
+      const statusCode = upstreamRes.statusCode || 0;
+      const hostname = finalUrl.hostname;
+
+      this.logDownload("download start", finalUrl, { host: hostname, targetPath: finalPath });
+
+      if (getAgent && this.upstreamProxyManager.hasProxyFor(finalUrl.protocol, hostname)) {
+        this.logDownload("outbound via upstream proxy", finalUrl, {
+          host: hostname,
+          protocol: finalUrl.protocol,
+        });
+      }
+
+      if (statusCode >= 400) {
+        const chunks = [];
+        for await (const chunk of upstreamRes) {
+          chunks.push(chunk);
+          if (Buffer.concat(chunks).length > 2048) {
+            break;
+          }
+        }
+
+        const body = Buffer.concat(chunks).toString("utf8");
+        throw Object.assign(new Error(`Upstream GET failed (${statusCode}) ${finalUrl.href}`), {
+          statusCode,
+          upstreamBody: body,
+        });
+      }
+
+      if (statusCode < 200 || statusCode >= 300) {
+        throw new Error(`Unexpected status code ${statusCode} for ${finalUrl.href}`);
+      }
+
+      const expectedLength = Number.parseInt(upstreamRes.headers["content-length"], 10);
+      const responseHeaders = stripHopByHopResponseHeaders(upstreamRes.headers || {});
+      responseHeaders["x-cache"] = "MISS";
+
+      if (!res.headersSent) {
+        res.writeHead(statusCode, responseHeaders);
+      }
+
+      const cacheStream = fs.createWriteStream(tempPath, { flags: "w" });
+      const cacheDone = pipeline(upstreamRes, cacheStream);
+
+      // Mirror bytes to client as soon as they arrive so client-side read timeouts won't trigger on long downloads.
+      upstreamRes.pipe(res);
+
+      res.once("close", () => {
+        upstreamRes.unpipe(res);
+      });
+
+      res.on("error", () => {
+        // Client socket errors should not break cache writing.
+        this.logDownload("client response error", finalUrl);
+      });
+
+      await cacheDone;
+      await verifyFileSize(tempPath, Number.isFinite(expectedLength) ? expectedLength : null);
+      await fs.promises.rename(tempPath, finalPath);
+
+      const finalStats = await fs.promises.stat(finalPath);
+      this.logDownload("download succeeded", finalUrl, {
+        host: hostname,
+        targetPath: finalPath,
+        size: finalStats.size,
+        elapsedMs: Date.now() - startedAt,
+      });
+
+      try {
+        const meta = {
+          originalUrl: typeof finalUrl === "string" ? finalUrl : finalUrl?.href,
+          timestamp: new Date().toISOString(),
+        };
+        const metaPath = path.join(path.dirname(finalPath), "meta.json");
+        const tmpMetaPath = `${metaPath}.tmp`;
+        await fs.promises.writeFile(tmpMetaPath, JSON.stringify(meta), "utf8");
+        await fs.promises.rename(tmpMetaPath, metaPath);
+      } catch (err) {
+        this.logDownload("meta write failed", finalUrl, {
+          targetDir: path.dirname(finalPath),
+          message: err?.message || String(err),
+        });
+      }
+
+      if (!res.writableEnded) {
+        try {
+          await finished(res);
+        } catch {
+          // client may close early; cache file has already been persisted
+        }
+      }
+    } catch (error) {
+      if (isLocalFsWriteError(error)) {
+        if (!error.statusCode) {
+          error.statusCode = 500;
+        }
+
+        this.logDownload("local cache write failed", urlObj, {
+          code: error.code || "UNKNOWN",
+          targetPath: finalPath,
+          tempPath,
+          message: error.message,
+        });
+      }
+
+      this.logDownload("download failed", urlObj, {
+        host: toHost(urlObj),
+        code: error.code || "UNKNOWN",
+        statusCode: error.statusCode || 0,
+        targetPath: finalPath,
+        tempPath,
+        message: error.message,
+        upstreamBodyPreview: toBodyPreview(error.upstreamBody),
+      });
+
+      await removeIfExists(tempPath);
+
+      if (!res.headersSent) {
+        const statusCode = error.statusCode || 502;
+        res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
+        res.end(`Download failed: ${error.message}`);
+      } else if (!res.writableEnded) {
+        res.destroy(error);
+      }
+
+      throw error;
+    }
   }
 
   async #downloadAtomic(urlObj, finalPath, requestHeaders) {

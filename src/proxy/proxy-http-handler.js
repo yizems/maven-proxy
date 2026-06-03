@@ -371,7 +371,35 @@ export function createHttpRequestHandler({
       // Ensure Host header matches the actual download target when using meta.originalUrl
       const downloadRequestHeaders = sanitizeHeaders(req.headers || {});
       downloadRequestHeaders.host = downloadUrlObj.host;
-      await downloader.ensureCached(downloadUrlObj, cachePath, downloadRequestHeaders);
+
+      // For cache-miss GET requests, stream upstream bytes to client immediately while writing .temp.
+      // This avoids long silent waits on client side before first-byte arrives.
+      if (method === "GET" && typeof downloader?.streamMissToClient === "function") {
+        const streamed = await downloader.streamMissToClient(
+          downloadUrlObj,
+          cachePath,
+          downloadRequestHeaders,
+          res,
+        );
+
+        if (streamed?.responseSent) {
+          if (canonical && mavenAffinityIndex) {
+            try {
+              mavenAffinityIndex.clearNegative({
+                canonicalKey: canonical.canonicalKey,
+                urlObj,
+              });
+            } catch (err) {
+              console.error(
+                `[proxy] clearing negative index failed: ${err?.message || err}`,
+              );
+            }
+          }
+          return;
+        }
+      } else {
+        await downloader.ensureCached(downloadUrlObj, cachePath, downloadRequestHeaders);
+      }
 
       if (canonical && mavenAffinityIndex) {
         try {
@@ -420,11 +448,13 @@ export function createHttpRequestHandler({
         );
       }
 
-      const statusCode = error.statusCode || 502;
-      const label =
-        statusCode === 500 ? "Local cache write failed" : "Download failed";
-      const message = `${label}: ${error.message}`;
-      sendErrorText(res, statusCode, message, "proxy");
+      if (!res.headersSent && !res.writableEnded) {
+        const statusCode = error.statusCode || 502;
+        const label =
+          statusCode === 500 ? "Local cache write failed" : "Download failed";
+        const message = `${label}: ${error.message}`;
+        sendErrorText(res, statusCode, message, "proxy");
+      }
     }
   };
 }

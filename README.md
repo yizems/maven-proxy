@@ -216,6 +216,7 @@ Default ports:
 - HTTP and HTTPS proxy entry.
 - Domain-based HTTPS MITM with Root CA issued leaf certs.
 - Temporary file download + integrity check + atomic rename.
+- Cache-miss GET now streams upstream bytes to client while writing `.temp` cache in parallel.
 - Multi-thread download with thresholds.
 - Upstream proxy support for outbound requests and CONNECT.
 - npm proxy support for registry metadata and tarballs.
