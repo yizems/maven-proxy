@@ -443,6 +443,7 @@ Default CLI config path:
 
 Common commands:
 - maven-proxy --config /path/to/config
+- maven-proxy
 - maven-proxy start --mode development
 - maven-proxy start --mode user
 - maven-proxy stop
@@ -453,8 +454,15 @@ Common commands:
 - maven-proxy doctor
 
 Start/stop behavior:
+- `maven-proxy` starts in foreground. If a previous background instance exists, it is stopped first and then the new process starts.
 - `maven-proxy start` runs in background and returns immediately.
 - `maven-proxy stop` stops the background process using PID file `~/maven-proxy/maven-proxy.pid`.
+
+PM2 example:
+
+```bash
+pm2 start maven-proxy --name maven-proxy --time -- --mode user
+```
 
 Doctor command:
 - Checks config loading, port availability, keytool, JAVA_HOME, cert/truststore paths, and writable log/cache directories.

@@ -473,6 +473,7 @@ maven-proxy
 4. 常用 CLI 参数：
 
 - `maven-proxy --config /path/to/config`
+- `maven-proxy`
 - `maven-proxy start --mode development`
 - `maven-proxy start --mode user`
 - `maven-proxy stop`
@@ -484,8 +485,15 @@ maven-proxy
 
 启动/停止行为：
 
+- `maven-proxy` 默认以前台同步方式启动；如果检测到之前已有后台实例在运行，会先停止旧实例，再启动新的当前进程。
 - `maven-proxy start` 以后台方式启动并立即返回，不阻塞当前终端。
 - `maven-proxy stop` 通过 PID 文件 `~/maven-proxy/maven-proxy.pid` 停止后台进程。
+
+PM2 启动示例：
+
+```bash
+pm2 start maven-proxy --name maven-proxy --time -- --mode user
+```
 
 5. 规则说明：
 

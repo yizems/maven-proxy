@@ -10,6 +10,7 @@ const defaultConfigDir = path.resolve(os.homedir(), "maven-proxy");
 const defaultConfigFile = path.join(defaultConfigDir, "config.properties");
 const daemonPidFile = path.join(defaultConfigDir, "maven-proxy.pid");
 const internalRunCommand = "__run-server";
+const defaultForegroundCommand = "__start-foreground";
 const cliFilePath = fileURLToPath(import.meta.url);
 
 function normalizeMode(value) {
@@ -72,9 +73,13 @@ function printHelp() {
   console.log("  maven-proxy truststore print");
   console.log("  maven-proxy truststore merge --source ./a.jks --target ./b.jks");
   console.log("  maven-proxy doctor");
+  console.log("");
+  console.log("Default behavior:");
+  console.log("  maven-proxy            Start in foreground; if a previous background instance exists, stop it first.");
+  console.log("  maven-proxy start      Start in background and return immediately.");
 }
 
-function parseArgs(args) {
+export function parseArgs(args) {
   const options = {
     help: false,
     force: false,
@@ -258,6 +263,10 @@ async function runServerInCurrentProcess(options) {
   await import("../src/index.js");
 }
 
+export function resolveCliCommand(options) {
+  return options.command || defaultForegroundCommand;
+}
+
 function parsePid(rawText) {
   const pid = Number.parseInt(String(rawText || "").trim(), 10);
   return Number.isFinite(pid) && pid > 0 ? pid : 0;
@@ -390,6 +399,20 @@ async function startServer(options) {
 
   console.log(`[maven-proxy] started in background (pid=${child.pid})`);
   console.log(`[maven-proxy] pid file: ${daemonPidFile}`);
+}
+
+async function restartIntoForeground(options) {
+  await fs.promises.mkdir(defaultConfigDir, { recursive: true });
+
+  const existingPid = readDaemonPid();
+  if (existingPid && isProcessRunning(existingPid)) {
+    console.log(`[maven-proxy] replacing existing background process (pid=${existingPid})`);
+    await stopServer(options);
+  } else if (existingPid) {
+    await removeDaemonPidFile();
+  }
+
+  await runServerInCurrentProcess(options);
 }
 
 async function stopServer(options) {
@@ -769,10 +792,10 @@ async function main() {
     return;
   }
 
-  const command = options.command || "start";
+  const command = resolveCliCommand(options);
   const configFile = resolvePath(options.configPath) || defaultConfigFile;
 
-  await ensureAutoConfigIfNeeded(options, command);
+  await ensureAutoConfigIfNeeded(options, command === defaultForegroundCommand ? "start" : command);
 
   if (command === "init-config") {
     if (options.commandArgs.length > 0) {
@@ -811,6 +834,14 @@ async function main() {
     return;
   }
 
+  if (command === defaultForegroundCommand) {
+    if (options.commandArgs.length > 0) {
+      throw new Error(`Unknown argument for default start: ${options.commandArgs[0]}`);
+    }
+    await restartIntoForeground(options);
+    return;
+  }
+
   if (command === internalRunCommand) {
     if (options.commandArgs.length > 0) {
       throw new Error(`Unknown argument for ${internalRunCommand}: ${options.commandArgs[0]}`);
@@ -822,7 +853,9 @@ async function main() {
   throw new Error(`Unknown command: ${command}`);
 }
 
-main().catch((error) => {
-  console.error(`[maven-proxy] ${error.message}`);
-  process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === cliFilePath) {
+  main().catch((error) => {
+    console.error(`[maven-proxy] ${error.message}`);
+    process.exit(1);
+  });
+}
