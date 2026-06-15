@@ -263,17 +263,30 @@ function parsePid(rawText) {
   return Number.isFinite(pid) && pid > 0 ? pid : 0;
 }
 
-function readDaemonPid() {
+function readDaemonPidState() {
   if (!fs.existsSync(daemonPidFile)) {
-    return 0;
+    return {
+      exists: false,
+      pid: 0,
+    };
   }
 
   try {
     const text = fs.readFileSync(daemonPidFile, "utf8");
-    return parsePid(text);
+    return {
+      exists: true,
+      pid: parsePid(text),
+    };
   } catch {
-    return 0;
+    return {
+      exists: true,
+      pid: 0,
+    };
   }
+}
+
+function readDaemonPid() {
+  return readDaemonPidState().pid;
 }
 
 function isProcessRunning(pid) {
@@ -294,6 +307,24 @@ function isProcessRunning(pid) {
 
 async function removeDaemonPidFile() {
   await fs.promises.rm(daemonPidFile, { force: true });
+}
+
+function trySignalProcess(pid, signal) {
+  try {
+    process.kill(pid, signal);
+    return {
+      ok: true,
+      missing: false,
+    };
+  } catch (error) {
+    if (error?.code === "ESRCH") {
+      return {
+        ok: false,
+        missing: true,
+      };
+    }
+    throw error;
+  }
 }
 
 function waitMs(ms) {
@@ -362,9 +393,16 @@ async function startServer(options) {
 }
 
 async function stopServer(options) {
-  const pid = readDaemonPid();
-  if (!pid) {
+  const pidState = readDaemonPidState();
+  if (!pidState.exists) {
     console.log("[maven-proxy] not running (pid file not found)");
+    return;
+  }
+
+  const pid = pidState.pid;
+  if (!pid) {
+    await removeDaemonPidFile();
+    console.log(`[maven-proxy] stale pid file removed: ${daemonPidFile}`);
     return;
   }
 
@@ -374,10 +412,22 @@ async function stopServer(options) {
     return;
   }
 
-  process.kill(pid, "SIGTERM");
+  const sigtermResult = trySignalProcess(pid, "SIGTERM");
+  if (sigtermResult.missing) {
+    await removeDaemonPidFile();
+    console.log(`[maven-proxy] stale pid removed: ${pid}`);
+    return;
+  }
+
   const stopped = await waitForProcessExit(pid, 5000);
   if (!stopped) {
-    process.kill(pid, "SIGKILL");
+    const sigkillResult = trySignalProcess(pid, "SIGKILL");
+    if (sigkillResult.missing) {
+      await removeDaemonPidFile();
+      console.log(`[maven-proxy] stale pid removed: ${pid}`);
+      return;
+    }
+
     const forceStopped = await waitForProcessExit(pid, 2000);
     if (!forceStopped) {
       throw new Error(`stop failed: unable to terminate pid ${pid}`);
