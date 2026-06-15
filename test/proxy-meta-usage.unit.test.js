@@ -100,6 +100,64 @@ describe("proxy meta.json usage", () => {
     await fsp.rm(tmp, { recursive: true, force: true });
   });
 
+  test("keeps ensureCached path for GET when target host is configured for multi-thread download", async () => {
+    const tmp = await fsp.mkdtemp(path.join(os.tmpdir(), "proxy-multi-thread-"));
+
+    const config = {
+      cacheDir: tmp,
+      downloadTimeoutMs: 1000,
+      mavenCacheUseDomainDir: false,
+      multiThreadDomains: ["repo1.maven.org"],
+    };
+
+    const matchesDomain = (hostname, patterns = []) =>
+      patterns.includes(String(hostname || "").toLowerCase());
+
+    let ensureCalled = false;
+    let streamCalled = false;
+    const fakeDownloader = {
+      async ensureCached(urlObj, finalPath) {
+        ensureCalled = true;
+        await fsp.mkdir(path.dirname(finalPath), { recursive: true });
+        await fsp.writeFile(finalPath, "ok-multi", "utf8");
+        return { cacheHit: false, finalPath };
+      },
+      async streamMissToClient() {
+        streamCalled = true;
+        throw new Error("streamMissToClient should not be used for multi-thread domains");
+      },
+    };
+
+    const handler = createHttpRequestHandler({
+      config,
+      downloader: fakeDownloader,
+      upstreamProxyManager: null,
+      matchesDomain,
+      mavenAffinityIndex: null,
+      cacheCleanupManager: null,
+    });
+
+    const req = {
+      method: "GET",
+      url: "/maven2/org/example/demo/1.0.0/demo-1.0.0.pom",
+      headers: { host: "repo1.maven.org" },
+      socket: {},
+    };
+
+    const res = new MemoryResponse();
+    const finished = new Promise((resolve) => res.on("finish", resolve));
+
+    await handler(req, res);
+    await finished;
+
+    assert.equal(ensureCalled, true);
+    assert.equal(streamCalled, false);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body, "ok-multi");
+
+    await fsp.rm(tmp, { recursive: true, force: true });
+  });
+
   test("uses meta.originalUrl (with filename replaced) to download related artifact", async () => {
     const tmp = await fsp.mkdtemp(path.join(os.tmpdir(), "proxy-meta-"));
 

@@ -371,10 +371,14 @@ export function createHttpRequestHandler({
       // Ensure Host header matches the actual download target when using meta.originalUrl
       const downloadRequestHeaders = sanitizeHeaders(req.headers || {});
       downloadRequestHeaders.host = downloadUrlObj.host;
+      const allowStreamOnMiss =
+        method === "GET" &&
+        typeof downloader?.streamMissToClient === "function" &&
+        !matchesDomain(downloadUrlObj.hostname, config.multiThreadDomains || []);
 
       // For cache-miss GET requests, stream upstream bytes to client immediately while writing .temp.
       // This avoids long silent waits on client side before first-byte arrives.
-      if (method === "GET" && typeof downloader?.streamMissToClient === "function") {
+      if (allowStreamOnMiss) {
         const streamed = await downloader.streamMissToClient(
           downloadUrlObj,
           cachePath,
