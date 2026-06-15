@@ -853,7 +853,20 @@ async function main() {
   throw new Error(`Unknown command: ${command}`);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === cliFilePath) {
+function isEntrypoint() {
+  if (!process.argv[1]) {
+    return false;
+  }
+
+  try {
+    return fs.realpathSync(process.argv[1]) === fs.realpathSync(cliFilePath);
+  } catch {
+    // If realpathSync fails (e.g. path does not exist), fall back to string compare.
+    return path.resolve(process.argv[1]) === cliFilePath;
+  }
+}
+
+if (isEntrypoint()) {
   main().catch((error) => {
     console.error(`[maven-proxy] ${error.message}`);
     process.exit(1);
