@@ -495,6 +495,18 @@ PM2 启动示例：
 pm2 start maven-proxy --name maven-proxy --time -- --mode user
 ```
 
+说明：
+- pm2 通过 stdout 捕获日志（`pm2 logs maven-proxy`），建议配置文件中设置 `LOG_TO_STDOUT=true`，否则运行期日志仅写入 `~/maven-proxy/data/logs/downloads/`，`pm2 logs` 只能看到启动消息。
+- 如果 `maven-proxy` 不在 pm2 的 PATH 中，可改用 JS 文件绝对路径：
+  ```bash
+  pm2 start "$(npm root -g)/maven-proxy/bin/maven-proxy.js" --name maven-proxy --time -- --mode user
+  ```
+- 开机自启：
+  ```bash
+  pm2 save
+  pm2 startup  # 按提示执行输出的命令
+  ```
+
 5. 规则说明：
 
 - 开发阶段（在项目目录执行 `npm start`）默认使用项目 `config.properties`。

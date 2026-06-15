@@ -464,6 +464,18 @@ PM2 example:
 pm2 start maven-proxy --name maven-proxy --time -- --mode user
 ```
 
+Notes:
+- pm2 captures logs via stdout (`pm2 logs maven-proxy`). Set `LOG_TO_STDOUT=true` in your config so runtime logs are visible in pm2. Without it only startup messages appear; all request/download logs go to `~/maven-proxy/data/logs/downloads/`.
+- If `maven-proxy` is not in pm2's PATH, use the JS file path directly:
+  ```bash
+  pm2 start "$(npm root -g)/maven-proxy/bin/maven-proxy.js" --name maven-proxy --time -- --mode user
+  ```
+- Auto-start on boot:
+  ```bash
+  pm2 save
+  pm2 startup  # run the command that pm2 prints
+  ```
+
 Doctor command:
 - Checks config loading, port availability, keytool, JAVA_HOME, cert/truststore paths, and writable log/cache directories.
 - Reports PASS/WARN/FAIL.

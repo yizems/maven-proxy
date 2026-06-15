@@ -192,7 +192,7 @@ function getDefaultConfigTemplate() {
   appendEntry("DOWNLOAD_TIMEOUT", "60s", "上游请求超时时间（支持 s/m/h/d），默认 60s。", "Upstream request timeout (supports s/m/h/d). Default: 60s.");
   appendEntry("DOWNLOAD_LOG_DIR", "data/logs/downloads", "统一主日志与错误日志目录。", "Unified main and error log directory.");
   appendEntry("LOG_RETENTION", "7d", "日志保留时长（支持 s/m/h/d），默认 7d。", "Log retention duration (supports s/m/h/d). Default: 7d.");
-  appendEntry("LOG_TO_STDOUT", "false", "是否输出运行期日志到命令行，默认 false。", "Output runtime logs to stdout. Default: false.");
+  appendEntry("LOG_TO_STDOUT", "true", "是否输出运行期日志到命令行，默认 false。", "Output runtime logs to stdout. Default: false.");
   appendEntry("LOG_CONNECT_EVENTS", "false", "是否输出详细 CONNECT/MITM 握手日志，默认 false。", "Output detailed CONNECT/MITM handshake logs. Default: false.");
   appendEntry("OUTBOUND_KEEP_ALIVE", "true", "是否启用出站 keep-alive 连接复用池，默认 true。", "Enable outbound keep-alive connection pool. Default: true.");
   appendEntry("OUTBOUND_KEEP_ALIVE_INTERVAL", "1s", "keep-alive 间隔（支持 s/m/h/d），默认 1s。", "Keep-alive interval (supports s/m/h/d). Default: 1s.");
