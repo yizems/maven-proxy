@@ -461,15 +461,11 @@ Start/stop behavior:
 PM2 example:
 
 ```bash
-pm2 start maven-proxy --name maven-proxy --time -- --mode user
+pm2 start "$(npm root -g)/maven-proxy/bin/server.cjs" --name maven-proxy
 ```
 
 Notes:
 - pm2 captures logs via stdout (`pm2 logs maven-proxy`). Set `LOG_TO_STDOUT=true` in your config so runtime logs are visible in pm2. Without it only startup messages appear; all request/download logs go to `~/maven-proxy/data/logs/downloads/`.
-- If `maven-proxy` is not in pm2's PATH, use the JS file path directly:
-  ```bash
-  pm2 start "$(npm root -g)/maven-proxy/bin/maven-proxy.js" --name maven-proxy --time -- --mode user
-  ```
 - Auto-start on boot:
   ```bash
   pm2 save
@@ -500,7 +496,7 @@ systemProp.http.proxyHost=127.0.0.1
 systemProp.http.proxyPort=8080
 systemProp.https.proxyHost=127.0.0.1
 systemProp.https.proxyPort=8080
-org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/data/certs/proxy-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit
+org.gradle.jvmargs=-Djavax.net.ssl.trustStore=~/projects/maven-proxy/data/certs/proxy-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit
 ```
 
 3. Validate:

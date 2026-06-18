@@ -492,15 +492,11 @@ maven-proxy
 PM2 启动示例：
 
 ```bash
-pm2 start maven-proxy --name maven-proxy --time -- --mode user
+pm2 start "$(npm root -g)/maven-proxy/bin/server.cjs" --name maven-proxy
 ```
 
 说明：
 - pm2 通过 stdout 捕获日志（`pm2 logs maven-proxy`），建议配置文件中设置 `LOG_TO_STDOUT=true`，否则运行期日志仅写入 `~/maven-proxy/data/logs/downloads/`，`pm2 logs` 只能看到启动消息。
-- 如果 `maven-proxy` 不在 pm2 的 PATH 中，可改用 JS 文件绝对路径：
-  ```bash
-  pm2 start "$(npm root -g)/maven-proxy/bin/maven-proxy.js" --name maven-proxy --time -- --mode user
-  ```
 - 开机自启：
   ```bash
   pm2 save
@@ -565,7 +561,7 @@ systemProp.https.proxyHost=127.0.0.1
 systemProp.https.proxyPort=8080
 
 # 使用项目 trust store 信任本地 Root CA
-org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/data/certs/proxy-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit
+org.gradle.jvmargs=-Djavax.net.ssl.trustStore=~/projects/maven-proxy/data/certs/proxy-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit
 ```
 
 3. 最小验证（在任意 Gradle 项目下）：
@@ -582,7 +578,7 @@ org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/d
   -Dhttp.proxyPort=8080 \
   -Dhttps.proxyHost=127.0.0.1 \
   -Dhttps.proxyPort=8080 \
-  -Djavax.net.ssl.trustStore=/Users/yize/projects/maven-proxy/data/certs/proxy-truststore.jks \
+  -Djavax.net.ssl.trustStore=~/projects/maven-proxy/data/certs/proxy-truststore.jks \
   -Djavax.net.ssl.trustStorePassword=changeit \
   dependencies
 ```
