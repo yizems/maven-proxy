@@ -57,7 +57,7 @@ function buildNegativeKey(scope, canonicalKey) {
 function serializeSnapshot(negativeMap) {
   return {
     version: 1,
-    generatedAt: new Date().toISOString(),
+    generatedAt: new Date().toLocaleString(),
     negative: [...negativeMap.entries()],
   };
 }

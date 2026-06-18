@@ -466,7 +466,7 @@ export class Downloader {
       try {
         const meta = {
           originalUrl: typeof finalUrl === "string" ? finalUrl : finalUrl?.href,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toLocaleString(),
         };
         const metaPath = path.join(path.dirname(finalPath), "meta.json");
         const tmpMetaPath = `${metaPath}.tmp`;
@@ -603,7 +603,7 @@ export class Downloader {
       try {
         const meta = {
           originalUrl: typeof downloadUrl === "string" ? downloadUrl : downloadUrl?.href,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toLocaleString(),
         };
         const metaPath = path.join(path.dirname(finalPath), "meta.json");
         const tmpMetaPath = `${metaPath}.tmp`;

@@ -12,11 +12,13 @@ function mirrorConsoleMethod({
   outputToConsole,
 }) {
   return (...args) => {
+    const time = new Date().toLocaleString();
     if (outputToConsole) {
-      originalMethod(...args);
+      originalMethod(`[${time}]`,...args);
+      console.log('a','b')
     }
 
-    const line = `[${new Date().toISOString()}] [${level}] ${util.format(...args)}`;
+    const line = `[${time}] [${level}] ${util.format(...args)}`;
     appLogFile.appendLine(line).catch((error) => {
       process.stderr.write(`[maven-proxy] write console log failed: ${error.message}\n`);
     });

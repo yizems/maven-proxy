@@ -202,7 +202,7 @@ describe("proxy meta.json usage", () => {
 
     const meta = {
       originalUrl: "https://repo1.maven.org/maven2/com/acme/demo/1.0.0/demo-1.0.0.pom",
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString(),
     };
 
     await fsp.writeFile(path.join(dir, "meta.json"), JSON.stringify(meta), "utf8");
