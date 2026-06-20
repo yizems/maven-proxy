@@ -171,6 +171,29 @@ const defaultRepoFallbackRepos = [
   "https://dl.google.com",
 ];
 
+const defaultCacheAllowedExtensions = [
+  // Maven artifacts and metadata
+  ".pom", ".jar", ".aar", ".war", ".ear", ".module", ".xml",
+  ".sha1", ".md5", ".sha256", ".sha512", ".asc", ".toml", ".klib",
+  // npm and generic package archives
+  ".tgz", ".tar.gz", ".tar.bz2", ".tar.xz", ".json",
+  // Compressed / archive formats
+  ".zip", ".gz", ".gzip", ".bz2", ".xz", ".7z", ".rar", ".zst",
+  // Web and JavaScript formats
+  ".html", ".htm", ".js", ".mjs", ".cjs", ".css", ".ts", ".wasm",
+];
+
+function parseCacheAllowedExtensions(value) {
+  if (!value || !String(value).trim()) {
+    return defaultCacheAllowedExtensions;
+  }
+  return String(value)
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .map((s) => (s.startsWith(".") ? s : `.${s}`));
+}
+
 const defaultMavenCacheIgnorePathPrefixes = [
   "repo1.maven.org/maven2",
   "repo.maven.apache.org/maven2",
@@ -271,6 +294,7 @@ export const config = {
   cacheDiskFreeTarget: process.env.CACHE_DISK_FREE_TARGET || "25G",
   cacheMaxSize: process.env.CACHE_MAX_SIZE || "",
   cacheTargetSize: process.env.CACHE_TARGET_SIZE || "",
+  cacheAllowedExtensions: parseCacheAllowedExtensions(process.env.CACHE_ALLOWED_EXTENSIONS),
   downloadLogDir: path.resolve(configBaseDir, process.env.DOWNLOAD_LOG_DIR || "data/logs/downloads"),
   logRetention,
   logRetentionDays,

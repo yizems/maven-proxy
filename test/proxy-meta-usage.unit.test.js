@@ -51,6 +51,7 @@ describe("proxy meta.json usage", () => {
       cacheDir: tmp,
       downloadTimeoutMs: 1000,
       mavenCacheUseDomainDir: false,
+      cacheAllowedExtensions: [".pom", ".jar", ".aar", ".tgz", ".tar.gz", ".json", ".xml", ".sha1", ".md5", ".sha256", ".sha512", ".asc", ".module"],
     };
 
     const matchesDomain = () => false;
@@ -108,6 +109,7 @@ describe("proxy meta.json usage", () => {
       downloadTimeoutMs: 1000,
       mavenCacheUseDomainDir: false,
       multiThreadDomains: ["repo1.maven.org"],
+      cacheAllowedExtensions: [".pom", ".jar", ".aar", ".tgz", ".tar.gz", ".json", ".xml", ".sha1", ".md5", ".sha256", ".sha512", ".asc", ".module"],
     };
 
     const matchesDomain = (hostname, patterns = []) =>
@@ -165,6 +167,7 @@ describe("proxy meta.json usage", () => {
       cacheDir: tmp,
       downloadTimeoutMs: 1000,
       mavenCacheUseDomainDir: false,
+      cacheAllowedExtensions: [".pom", ".jar", ".aar", ".tgz", ".tar.gz", ".json", ".xml", ".sha1", ".md5", ".sha256", ".sha512", ".asc", ".module"],
     };
 
     const matchesDomain = () => false;
