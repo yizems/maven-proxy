@@ -15,7 +15,6 @@ function mirrorConsoleMethod({
     const time = new Date().toLocaleString();
     if (outputToConsole) {
       originalMethod(`[${time}]`,...args);
-      console.log('a','b')
     }
 
     const line = `[${time}] [${level}] ${util.format(...args)}`;
